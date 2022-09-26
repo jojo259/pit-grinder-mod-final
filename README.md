@@ -1,6 +1,8 @@
 # pit-grinder-mod-final
 grinds pit, uses an API for instructions
 
+requires an authorization token
+
 ### usage:
 - **important:** create a text file in your .minecraft folder called `token.txt` and put your authorization token in there
 - press C to toggle bot

@@ -30,4 +30,4 @@ if you're not ok with all of this data being sent to the API then don't run the 
 no data is saved anywhere other than in memory
 
 ### building
-yeah i don't understand building properly so i just manually put the contexts of all of the .jars in `dependencyjars` into the .jar after `gradlew build`
+yeah i don't understand building properly so i just manually put the contents of all of the .jars in `dependencyjars` into the .jar after `gradlew build`

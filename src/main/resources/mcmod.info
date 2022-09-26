@@ -1,0 +1,16 @@
+[
+{
+  "modid": "gb",
+  "name": "gb",
+  "description": "grinds pit",
+  "version": "1.0",
+  "mcversion": "1.8.9",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["jojo"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]

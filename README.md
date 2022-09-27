@@ -27,7 +27,7 @@ requires an authorization token
 
 if you're not ok with all of this data being sent to the API then don't run the mod
 
-no data is saved anywhere other than in memory
+no data besides username/uuid is saved anywhere other than in memory
 
 ### building
 yeah i don't understand building properly so i just manually put the contents of all of the .jars in `dependencyjars` into the .jar after `gradlew build`

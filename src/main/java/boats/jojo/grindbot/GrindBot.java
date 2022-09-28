@@ -41,7 +41,7 @@ import net.minecraftforge.fml.common.gameevent.InputEvent;
 @Mod(
 		modid = "gb",
 		name = "gb",
-		version = "1.0",
+		version = "1.1",
 		acceptedMinecraftVersions = "1.8.9"
 )
 public class GrindBot
@@ -74,11 +74,14 @@ public class GrindBot
 	
 	int ticksPerApiCall = 200;
 	
-	int fovWhenGrinding = 120;
+	float initialFov = 120;
+	float fovWhenGrinding = 120;
 	
 	double curTargetX = 0;
 	double curTargetY = 0;
 	double curTargetZ = 0;
+	
+	double curSpawnLevel = 0;
 	
 	int timeSinceGotApi = 9999;
 	
@@ -140,8 +143,13 @@ public class GrindBot
 		
 		if (toggledGrinderTimeDiff > 500 && org.lwjgl.input.Keyboard.isKeyDown(Keyboard.KEY_C)) {
 			grinderEnabled = !grinderEnabled;
-			if (!grinderEnabled) { // newly disabled
+			
+			if (grinderEnabled) { // newly enabled
+				initialFov = mcInstance.gameSettings.fovSetting;
+			}
+			else if (!grinderEnabled) { // newly disabled
 				allKeysUp();
+				mcInstance.gameSettings.fovSetting = initialFov;
 			}
 			
 			lastToggledGrinder = curTime;
@@ -227,6 +235,10 @@ public class GrindBot
 		
 		// bot controlling
 		try {
+			// get fps
+			
+			curFps = Minecraft.getDebugFPS();
+						
 			// tick handler
 			
 			long curTime = System.currentTimeMillis();
@@ -248,9 +260,6 @@ public class GrindBot
 				mcInstance.gameSettings.fovSetting = fovWhenGrinding;
 				
 				doBotTick();
-			}
-			else {
-				mcInstance.gameSettings.fovSetting = 90;
 			}
 		}
 		catch(Exception e){
@@ -284,13 +293,9 @@ public class GrindBot
 	
 	public void doBotTick() {
 		try {
-			// get fps
-			
-			curFps = Minecraft.getDebugFPS();
-			
 			// go afk if fps too low (usually when world is loading)
 
-			if (curFps <= minimumFps) {
+			if (curFps < minimumFps) {
 				allKeysUp();
 				return;
 			}
@@ -304,7 +309,7 @@ public class GrindBot
 			// main things
 			
 			if (timeSinceSuccessfulApiResponse >= 40) {
-				if (Math.random() <= 0.05) { // too lazy to use actual timing
+				if (timeSinceSuccessfulApiResponse % 20 == 0) { // too lazy to use actual timing
 					allKeysUp();
 					KeyBinding.onTick(mcInstance.gameSettings.keyBindInventory.getKeyCode());
 				}
@@ -325,13 +330,18 @@ public class GrindBot
 					curTargetPos = getPlayerPos(curTargetName);
 				}
 				
-				if (Math.abs((curTargetPos[1] + 1.4) - mouseTargetY) > 1) {
-					
-				}
-				
 				mouseTargetX = curTargetPos[0];
 				mouseTargetY = curTargetPos[1] + 1;
 				mouseTargetZ = curTargetPos[2];
+			}
+			
+			if (mcInstance.thePlayer.posY > curSpawnLevel - 4 && !curTargetName.equals("null")) {
+				// in spawn but has target
+				curTargetName = "null";
+				
+				mouseTargetX = 0;
+				mouseTargetY = curSpawnLevel - 4;
+				mouseTargetZ = 0;
 			}
 			
 			if (mouseTargetX != 0 || mouseTargetY != 0 || mouseTargetZ != 0) { // dumb null check
@@ -628,11 +638,6 @@ public class GrindBot
 	public void ingestApiResponse(String apiText) {
 		String[] apiStringSplit = apiText.split("##!##");
 		
-		if (apiStringSplit.length != 14) {
-			System.out.println("api response wrong length");
-			return;
-		}
-		
 		// execute given instructions
 		
 		if (!apiStringSplit[0].equals("null")) {
@@ -729,7 +734,7 @@ public class GrindBot
 		}
 		
 		if (!apiStringSplit[10].equals("null")) {
-			fovWhenGrinding = Integer.parseInt(apiStringSplit[10]);
+			fovWhenGrinding = Float.parseFloat(apiStringSplit[10]);
 		}
 		
 		if (!apiStringSplit[11].equals("null")) {
@@ -748,6 +753,10 @@ public class GrindBot
 		
 		if (!apiStringSplit[13].equals("null")) {
 			apiMessage = apiStringSplit[13];
+		}
+		
+		if (!apiStringSplit[14].equals("null")) {
+			curSpawnLevel = Double.parseDouble(apiStringSplit[14]);
 		}
 		
 		apiLastTotalProcessingTime = (int) (System.currentTimeMillis() - preApiProcessingTime);

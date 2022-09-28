@@ -1,10 +1,18 @@
 # pit-grinder-mod-final
 grinds pit, uses an API for instructions
 
+requires an authorization token
+
 ### usage:
 - **important:** create a text file in your .minecraft folder called `token.txt` and put your authorization token in there
 - press C to toggle bot
-- press K to toggle built-in autoclicker (do not use if using external KillAura or AutoClicker)
+- press K to toggle built-in autoclicker (do not use if using external killaura or autoclicker)
+
+### vape/other settings:
+- if using vape killaura or autoclicker then don't use built-in autoclicker
+- if using vape killaura:
+  - set 'allowed items' to 'sword'
+  - set it to disable killaura when any gui is open
 
 ### list of data that is sent to the API:
 - authorization token
@@ -25,4 +33,5 @@ grinds pit, uses an API for instructions
 
 if you're not ok with all of this data being sent to the API then don't run the mod
 
-no data is saved anywhere other than in memory
+### building
+yeah i don't understand building properly so i just manually put the contents of all of the .jars in `dependencyjars` into the .jar after `gradlew build`

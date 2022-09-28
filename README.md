@@ -5,8 +5,9 @@ requires an authorization token
 
 ### usage:
 - **important:** create a text file in your .minecraft folder called `token.txt` and put your authorization token in there
-- press C to toggle bot
+- press J to toggle bot
 - press K to toggle built-in autoclicker (do not use if using external killaura or autoclicker)
+- press F3 + P once to disable pausing when minecraft is not in focus
 
 ### vape/other settings:
 - if using vape killaura or autoclicker then don't use built-in autoclicker

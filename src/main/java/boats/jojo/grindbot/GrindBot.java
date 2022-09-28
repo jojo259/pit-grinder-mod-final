@@ -141,7 +141,7 @@ public class GrindBot
 		
 		long toggledGrinderTimeDiff = curTime - lastToggledGrinder;
 		
-		if (toggledGrinderTimeDiff > 500 && org.lwjgl.input.Keyboard.isKeyDown(Keyboard.KEY_C)) {
+		if (toggledGrinderTimeDiff > 500 && org.lwjgl.input.Keyboard.isKeyDown(Keyboard.KEY_J)) {
 			grinderEnabled = !grinderEnabled;
 			
 			if (grinderEnabled) { // newly enabled

@@ -41,7 +41,7 @@ import net.minecraftforge.fml.common.gameevent.InputEvent;
 @Mod(
 		modid = "gb",
 		name = "gb",
-		version = "1.1",
+		version = "1.2",
 		acceptedMinecraftVersions = "1.8.9"
 )
 public class GrindBot
@@ -297,6 +297,7 @@ public class GrindBot
 
 			if (curFps < minimumFps) {
 				allKeysUp();
+				apiMessage = "fps too low";
 				return;
 			}
 			
@@ -314,7 +315,8 @@ public class GrindBot
 					KeyBinding.onTick(mcInstance.gameSettings.keyBindInventory.getKeyCode());
 				}
 				
-				System.out.println("api response taking too long");
+				System.out.println("too long since successful api response");
+				apiMessage = "no api success";
 				return;
 			}
 
@@ -335,6 +337,16 @@ public class GrindBot
 				mouseTargetZ = curTargetPos[2];
 			}
 			
+			if (mcInstance.currentScreen == null) {
+				if (mouseTargetX != 0 || mouseTargetY != 0 || mouseTargetZ != 0) { // dumb null check
+					mouseMove();
+				}
+				doMovementKeys();
+			}
+			else {
+				allKeysUp();
+			}
+			
 			if (mcInstance.thePlayer.posY > curSpawnLevel - 4 && !curTargetName.equals("null")) {
 				// in spawn but has target
 				curTargetName = "null";
@@ -342,12 +354,9 @@ public class GrindBot
 				mouseTargetX = 0;
 				mouseTargetY = curSpawnLevel - 4;
 				mouseTargetZ = 0;
+				
+				allKeysUp();
 			}
-			
-			if (mouseTargetX != 0 || mouseTargetY != 0 || mouseTargetZ != 0) { // dumb null check
-				mouseMove();
-			}
-			doMovementKeys();
 		}
 		catch(Exception e) {
 			e.printStackTrace();
@@ -640,6 +649,12 @@ public class GrindBot
 		
 		// execute given instructions
 		
+		if (apiStringSplit.length < 15) {
+			System.out.println("api response wrong length");
+			apiMessage = "api response wrong length";
+			return;
+		}
+		
 		if (!apiStringSplit[0].equals("null")) {
 			nextTargetNames = apiStringSplit[0].split(":::");
 			curTargetName = nextTargetNames[0];
@@ -663,6 +678,7 @@ public class GrindBot
 			
 			if (keyChancesStringSplit.length != 15) {
 				System.out.println("key chances string split wrong length");
+				apiMessage = "api key chances failed";
 				return;
 			}
 			
@@ -702,6 +718,8 @@ public class GrindBot
 		}
 		
 		if (!apiStringSplit[5].equals("null")) {
+			allKeysUp();
+			
 			int containerItemToPress = Integer.parseInt(apiStringSplit[5]);
 			
 			System.out.println("pressing container item " + containerItemToPress);
@@ -710,6 +728,8 @@ public class GrindBot
 		}
 		
 		if (!apiStringSplit[6].equals("null")) {
+			allKeysUp();
+			
 			int inventoryItemToDrop = Integer.parseInt(apiStringSplit[6]);
 			
 			System.out.println("dropping inventory item " + inventoryItemToDrop);
@@ -718,6 +738,8 @@ public class GrindBot
 		}
 		
 		if (!apiStringSplit[7].equals("null")) {
+			allKeysUp();
+			
 			int inventoryItemToMove = Integer.parseInt(apiStringSplit[7]);
 			
 			System.out.println("moving inventory item " + inventoryItemToMove);
@@ -738,12 +760,16 @@ public class GrindBot
 		}
 		
 		if (!apiStringSplit[11].equals("null")) {
+			allKeysUp();
+			
 			if (apiStringSplit[11].equals("true")) {
 				mcInstance.currentScreen = null;
 			}
 		}
 		
 		if (!apiStringSplit[12].equals("null")) {
+			allKeysUp();
+			
 			if (apiStringSplit[12].equals("true")) {
 				if (mcInstance.currentScreen == null) {
 					KeyBinding.onTick(mcInstance.gameSettings.keyBindInventory.getKeyCode());

@@ -81,7 +81,7 @@ public class GrindBot
 	double curTargetY = 0;
 	double curTargetZ = 0;
 	
-	double curSpawnLevel = 0;
+	double curSpawnLevel = 999;
 	
 	int timeSinceGotApi = 9999;
 	

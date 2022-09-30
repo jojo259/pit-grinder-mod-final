@@ -527,7 +527,7 @@ public class GrindBot
 		if (containerItems.size() > 46) { // check if a container is open (definitely a better way to do that)
 			containerStr = "";
 			String containerStrSeparator = "!!!";
-			for(int i = 0; i < containerItems.size() - 36; i++){
+			for(int i = 0; i < containerItems.size() - 36; i++){ // minus 36 to cut off inventory
 				ItemStack curItem = containerItems.get(i);
 				
 				String curItemName = "air";

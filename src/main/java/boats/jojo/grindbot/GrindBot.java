@@ -282,10 +282,9 @@ public class GrindBot
 		
 		// logging chat messages
 		
-		String curChat = event.message.getUnformattedText();
-		if (curChat.split(":").length <= 1) { return; }
+		if (curChatRaw.split(":").length <= 1) { return; }
 		
-		lastChatMsg = curChat;
+		lastChatMsg = curChatRaw;
 	}
 	
 	public void doBotTick() {

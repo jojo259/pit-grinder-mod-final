@@ -18,7 +18,6 @@ import jakarta.ws.rs.core.Response;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
-import java.util.UUID;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
@@ -43,7 +42,7 @@ import net.minecraftforge.fml.common.gameevent.InputEvent;
 @Mod(
 		modid = "gb",
 		name = "gb",
-		version = "1.2",
+		version = "1.4",
 		acceptedMinecraftVersions = "1.8.9"
 )
 public class GrindBot
@@ -283,12 +282,8 @@ public class GrindBot
 		
 		// logging chat messages
 		
-		String[] curChatSplit = event.message.getUnformattedText().split(":");
-		if (curChatSplit.length <= 1) { return; }
-		
-		String curChat = String.join(":", Arrays.copyOfRange(curChatSplit, 1, curChatSplit.length)).trim();
-		
-		if (curChat.contains("§")) { return; }
+		String curChat = event.message.getUnformattedText();
+		if (curChat.split(":").length <= 1) { return; }
 		
 		lastChatMsg = curChat;
 	}
@@ -312,9 +307,9 @@ public class GrindBot
 			// main things
 			
 			if (timeSinceSuccessfulApiResponse >= 40) {
-				if (timeSinceSuccessfulApiResponse % 20 == 0) { // too lazy to use actual timing
+				if (timeSinceSuccessfulApiResponse % 20 == 0) {
 					allKeysUp();
-					KeyBinding.onTick(mcInstance.gameSettings.keyBindInventory.getKeyCode());
+					pressInventoryKeyIfNoGuiOpen();
 				}
 				
 				System.out.println("too long since successful api response");
@@ -350,12 +345,16 @@ public class GrindBot
 			}
 			
 			if (mcInstance.thePlayer.posY > curSpawnLevel - 4 && !curTargetName.equals("null")) {
-				// in spawn but has target
+
+				// in spawn but has target (bad)
+
 				curTargetName = "null";
 				
 				mouseTargetX = 0;
 				mouseTargetY = curSpawnLevel - 4;
 				mouseTargetZ = 0;
+
+				mcInstance.thePlayer.inventory.currentItem = 5;
 				
 				allKeysUp();
 			}
@@ -377,6 +376,7 @@ public class GrindBot
 				System.out.println("set token: " + fileToken);
 			}
 			catch(Exception e) {
+				System.out.println("reading token issue");
 				e.printStackTrace();
 			}
 		}
@@ -773,9 +773,7 @@ public class GrindBot
 			allKeysUp();
 			
 			if (apiStringSplit[12].equals("true")) {
-				if (mcInstance.currentScreen == null) {
-					KeyBinding.onTick(mcInstance.gameSettings.keyBindInventory.getKeyCode());
-				}
+				pressInventoryKeyIfNoGuiOpen();
 			}
 		}
 		
@@ -789,7 +787,7 @@ public class GrindBot
 		
 		apiLastTotalProcessingTime = (int) (System.currentTimeMillis() - preApiProcessingTime);
 		
-		System.out.println("total proccessing time was " + apiLastTotalProcessingTime + "ms");
+		System.out.println("total processing time was " + apiLastTotalProcessingTime + "ms");
 		
 		timeSinceSuccessfulApiResponse = 0;
 	}
@@ -861,6 +859,12 @@ public class GrindBot
 	public void doAttack() {
 		KeyBinding.onTick(mcInstance.gameSettings.keyBindAttack.getKeyCode());
 		attackedThisTick = true;
+	}
+
+	public void pressInventoryKeyIfNoGuiOpen() {
+		if (mcInstance.currentScreen == null) {
+			KeyBinding.onTick(mcInstance.gameSettings.keyBindInventory.getKeyCode());
+		}
 	}
 	
 	public void allKeysUp() {

@@ -104,7 +104,7 @@ public class GrindBot
 	String lastChatMsg = "";
 	String importantChatMsg = "";
 	
-	double keyChanceForwardDown = 0;
+	double keyChanceForwardDown = 0; // make good
 	double keyChanceForwardUp = 0;
 	
 	double keyChanceSideDown = 0;
@@ -249,7 +249,7 @@ public class GrindBot
 			
 			curFps = Minecraft.getDebugFPS();
 						
-			// tick handler
+			// bot tick handler
 			
 			long curTime = System.currentTimeMillis();
 				
@@ -259,7 +259,7 @@ public class GrindBot
 				return;
 			}
 			
-			// doing tick
+			// doing bot tick
 			
 			lastTickTime = curTime;
 			
@@ -279,8 +279,6 @@ public class GrindBot
 	
 	@SubscribeEvent
 	public void onChat(ClientChatReceivedEvent event) {
-		// tracking events by chat msg
-		
 		String curChatRaw = StringUtils.stripControlCodes(event.message.getUnformattedText());
 		
 		curChatRaw = new String(curChatRaw.getBytes(), StandardCharsets.UTF_8); // probably unnecessary
@@ -374,7 +372,7 @@ public class GrindBot
 		}
 	}
 
-	public void reloadKey() { // so lazy
+	public void reloadKey() {
 		String[] possibleKeyFileNames = {"key.txt", "key.txt.txt", "key", "token.txt", "token.txt.txt", "token"}; // from best to worst...
 
 		boolean foundKeyFile = false;
@@ -398,7 +396,7 @@ public class GrindBot
 					break; // only breaks if reading key file didn't error
 				}
 				catch(Exception e) {
-					System.out.println("reading key issue");
+					System.out.println("reading key error");
 					apiMessage = "error reading key";
 					e.printStackTrace();
 				}
@@ -416,7 +414,7 @@ public class GrindBot
 			reloadKey();
 		}
 
-		// return if key is still null - no key was read
+		// return if key is still null - no key was read so no point calling API
 		if (apiKey.equals("null")) {
 			return;
 		}
@@ -689,7 +687,7 @@ public class GrindBot
 	public void ingestApiResponse(String apiText) {
 		String[] apiStringSplit = apiText.split("##!##");
 		
-		// execute given instructions
+		// deal with given instructions
 
 		if (apiText.equals("key does not exist")) {
 			// key does not exist so was probably typed wrong. reload it to allow for correction

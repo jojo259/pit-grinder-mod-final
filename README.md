@@ -35,16 +35,16 @@ requires an authorization key
 if you're not ok with all of this data being sent to the API then don't run the mod
 
 ### contributing
-- Make sure you're using Java JDK 8
-- Clone the repo with git
-- Open with your favorite IDE
+- **MAKE SURE YOU'RE USING JAVA JDK 8.**
+- Open the repo with your favorite IDE.
 - Gradle should sync automatically and build dependencies, if not get a better IDE or run `gradlew setupDecompWorkspace`.
 - If you're using eclipse you can optionally run `gradlew eclipse` to generate a .launch file to run the project.
 - Make your changes
 - Increment version number [here](https://github.com/jojo259/pit-grinder-mod-final/blob/7c0c99ffc14439ae440527381bef4d155dba252c/src/main/java/boats/jojo/grindbot/GrindBot.java#L48) and [here](https://github.com/jojo259/pit-grinder-mod-final/blob/7c0c99ffc14439ae440527381bef4d155dba252c/src/main/resources/mcmod.info#L6)
 - Run the gradle build task through your ide or through `gradlew build`
-- Now you need to merge the deps, we don't have a good way of doing this but the current method is to unzip all of the jars inside dependencyjars into a folder using winrar or other tools, then unzip the jar you just built into that folder (override everything). 
-- After that go into the folder in your terminal and type `jar cvf gb-versionnumber.jar .`
-- You should now have a valid jar, make sure to test it and run with forge before pushing
+- Now you need to merge all of the jars into one. We don't have a good way of doing this, but the current method that I use is to unzip all of the jars inside "dependencyjars" into a folder using a tool like WinRAR.
+- After that take the jar you built and unzip it into that folder as well. Make sure to hit yes on any override prompts.
+- Finally go into the folder in your terminal and type `jar cvf gb-versionnumber.jar .`
+- You should now have a valid jar, make sure to test it and run with forge before pushing.
 
-please improve the building process we know it sucks
+Please feel free to make this better we know it sucks.

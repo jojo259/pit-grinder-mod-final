@@ -1,10 +1,10 @@
 # pit-grinder-mod-final
 grinds pit, uses an API for instructions
 
-requires an authorization token
+requires an authorization key
 
 ### usage:
-- **important:** create a text file in your .minecraft folder called `token.txt` and put your authorization token in there
+- **important:** create a text file in your .minecraft folder called `key.txt` and put your authorization key in there
 - press J to toggle bot
 - press K to toggle built-in autoclicker (do not use if using external killaura or autoclicker)
 - press F3 + P once to disable pausing when minecraft is not in focus
@@ -16,7 +16,7 @@ requires an authorization token
   - set it to disable killaura when any gui is open
 
 ### list of data that is sent to the API:
-- authorization token
+- authorization key
 - client username
 - client uuid
 - client position

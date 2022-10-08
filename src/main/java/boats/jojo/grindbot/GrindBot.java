@@ -42,7 +42,7 @@ import net.minecraftforge.fml.common.gameevent.InputEvent;
 @Mod(
 		modid = "gb",
 		name = "gb",
-		version = "1.4",
+		version = "1.5",
 		acceptedMinecraftVersions = "1.8.9"
 )
 public class GrindBot
@@ -69,7 +69,7 @@ public class GrindBot
 	String curTargetName = "null";
 	String[] nextTargetNames = null;
 	
-	String apiToken = "null";
+	String apiKey = "null";
 	
 	int minimumFps = 0;
 	
@@ -276,7 +276,8 @@ public class GrindBot
 		
 		curChatRaw = new String(curChatRaw.getBytes(), StandardCharsets.UTF_8); // probably unnecessary
 		
-		if (!curChatRaw.startsWith(":") && (curChatRaw.startsWith("MAJOR EVENT!") || curChatRaw.startsWith("MINOR EVENT!") || curChatRaw.startsWith("MYSTIC ITEM!") || curChatRaw.startsWith("PIT LEVEL UP!"))) {
+		// idk what the first thing is for
+		if (!curChatRaw.startsWith(":") && (curChatRaw.startsWith("MAJOR EVENT!") || curChatRaw.startsWith("NIGHT QUEST!") || curChatRaw.startsWith("QUICK MATHS!") || curChatRaw.startsWith("DONE!") || curChatRaw.startsWith("MINOR EVENT!") || curChatRaw.startsWith("MYSTIC ITEM!") || curChatRaw.startsWith("PIT LEVEL UP!"))) {
 			importantChatMsg = curChatRaw;
 		}
 		
@@ -312,7 +313,6 @@ public class GrindBot
 				}
 				
 				System.out.println("too long since successful api response");
-				apiMessage = "no api success";
 				return;
 			}
 
@@ -362,22 +362,70 @@ public class GrindBot
 			e.printStackTrace();
 		}
 	}
+
+	public void reloadKey() { // so lazy
+		try(FileInputStream inputStream = new FileInputStream("key.txt")) {	 
+			String fileKey = IOUtils.toString(inputStream);
+			
+			apiKey = fileKey;
+			
+			System.out.println("set key: " + fileKey);
+		}
+		catch(Exception e) {
+			System.out.println("reading key issue");
+			apiMessage = "error reading key";
+			e.printStackTrace();
+
+			try(FileInputStream inputStream2 = new FileInputStream("token.txt")) {	 
+				String fileKey2 = IOUtils.toString(inputStream2);
+				
+				apiKey = fileKey2;
+				
+				System.out.println("set key2: " + fileKey2);
+			}
+			catch(Exception e2) {
+				System.out.println("reading key issue2");
+				apiMessage = "error reading key2";
+				e2.printStackTrace();
+
+				try(FileInputStream inputStream3 = new FileInputStream("key.txt.txt")) {	 
+					String fileKey3 = IOUtils.toString(inputStream3);
+					
+					apiKey = fileKey3;
+					
+					System.out.println("set key3: " + fileKey3);
+				}
+				catch(Exception e3) {
+					System.out.println("reading key issue3");
+					apiMessage = "error reading key3";
+					e3.printStackTrace();
+
+					try(FileInputStream inputStream4 = new FileInputStream("token.txt.txt")) {	 
+						String fileKey4 = IOUtils.toString(inputStream4);
+						
+						apiKey = fileKey4;
+						
+						System.out.println("set key4: " + fileKey4);
+					}
+					catch(Exception e4) {
+						System.out.println("reading key issue4");
+						apiMessage = "error reading key4";
+						e4.printStackTrace();
+					}
+				}
+			}
+		}
+	}
 	
 	public void callBotApi() {
-		// set token from file if unset
-		
-		if (apiToken == "null") {
-			try(FileInputStream inputStream = new FileInputStream("token.txt")) {	 
-				String fileToken = IOUtils.toString(inputStream);
-				
-				apiToken = fileToken;
-				
-				System.out.println("set token: " + fileToken);
-			}
-			catch(Exception e) {
-				System.out.println("reading token issue");
-				e.printStackTrace();
-			}
+		// set key from file if unset
+		if (apiKey.equals("null")) {
+			reloadKey();
+		}
+
+		// return if key is still null - reading failed
+		if (apiKey.equals("null")) {
+			return;
 		}
 		
 		timeSinceGotApi = 0;
@@ -389,7 +437,7 @@ public class GrindBot
 		/*
 
 		list of data that is sent to the API:
-			-authorization token
+			-authorization key
 			-client username
 			-client uuid
 			-client position
@@ -412,9 +460,9 @@ public class GrindBot
 		String infoStr = "";
 		String dataSeparator = "##!##";
 		
-		// auth token
+		// auth key
 		
-		infoStr += apiToken + dataSeparator;
+		infoStr += apiKey + dataSeparator;
 		
 		// client username
 		
@@ -649,10 +697,14 @@ public class GrindBot
 		String[] apiStringSplit = apiText.split("##!##");
 		
 		// execute given instructions
+
+		if (apiText.equals("key does not exist")) {
+			reloadKey();
+		}
 		
 		if (apiStringSplit.length < 15) {
 			System.out.println("api response wrong length");
-			apiMessage = "api response wrong length";
+			apiMessage = "api response failure - " + apiText.substring(0, Math.min(apiText.length(), 64));;
 			return;
 		}
 		
@@ -667,7 +719,10 @@ public class GrindBot
 		}
 		
 		if (!apiStringSplit[1].equals("null")) {
-			mcInstance.thePlayer.sendChatMessage(apiStringSplit[1]);
+			String chatToSend = apiStringSplit[1];
+			if (!chatToSend.contains("/trade")) { // lol
+				mcInstance.thePlayer.sendChatMessage(apiStringSplit[1]);
+			}
 		}
 		
 		if (!apiStringSplit[2].equals("null")) {
@@ -912,6 +967,7 @@ public class GrindBot
 	}
 	
 	public void mouseMove() {
+		// old af math probably stupid
 		double targetRotY = fixRotY(360 - Math.toDegrees(Math.atan2(mouseTargetX - mcInstance.thePlayer.posX, mouseTargetZ - mcInstance.thePlayer.posZ)));
 		double flatDist = Math.sqrt((mouseTargetX - mcInstance.thePlayer.posX) * (mouseTargetX - mcInstance.thePlayer.posX) + (mouseTargetZ - mcInstance.thePlayer.posZ) * (mouseTargetZ - mcInstance.thePlayer.posZ));
 		double targetRotX = -Math.toDegrees(Math.atan((mouseTargetY - mcInstance.thePlayer.posY - 1.62) / flatDist));

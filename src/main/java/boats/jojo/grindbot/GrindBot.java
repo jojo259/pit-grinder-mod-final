@@ -5,6 +5,8 @@ import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
 
+import net.minecraftforge.client.ClientCommandHandler;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -51,7 +53,13 @@ public class GrindBot
 	@EventHandler
 	public void init(FMLInitializationEvent event) {
 		MinecraftForge.EVENT_BUS.register(this);
+		ClientCommandHandler.instance.registerCommand(new KeyCommand());
 	}
+	@EventHandler
+	public void serverLoad(FMLServerStartingEvent event) {
+		event.registerServerCommand(new KeyCommand());
+	}
+
 	
 	private static final Logger LOGGER = LogManager.getLogger();
 	
@@ -70,7 +78,7 @@ public class GrindBot
 	String curTargetName = "null";
 	String[] nextTargetNames = null;
 	
-	String apiKey = "null";
+	static String apiKey = "null";
 	
 	int minimumFps = 0;
 	

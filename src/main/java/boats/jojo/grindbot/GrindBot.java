@@ -1,5 +1,6 @@
 package boats.jojo.grindbot;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
@@ -120,13 +121,13 @@ public class GrindBot
 	
 	boolean autoClickerEnabled = false;
 	long lastToggledAutoClicker = 0;
+
+	boolean grinderEnabled = false;
+	long lastToggledGrinder = 0;
 	
 	long preApiProcessingTime = 0;
 	
 	String apiMessage = "null";
-	
-	boolean grinderEnabled = false;
-	long lastToggledGrinder = 0;
 	
 	Base64.Encoder base64encoder = Base64.getEncoder();
 	Base64.Decoder base64decoder = Base64.getDecoder();
@@ -310,9 +311,9 @@ public class GrindBot
 				if (timeSinceSuccessfulApiResponse % 20 == 0) {
 					allKeysUp();
 					pressInventoryKeyIfNoGuiOpen();
+					System.out.println("too long since successful api response");
 				}
 				
-				System.out.println("too long since successful api response");
 				return;
 			}
 
@@ -352,10 +353,12 @@ public class GrindBot
 				mouseTargetX = 0;
 				mouseTargetY = curSpawnLevel - 4;
 				mouseTargetZ = 0;
-
-				mcInstance.thePlayer.inventory.currentItem = 5;
 				
 				allKeysUp();
+
+				if (!autoClickerEnabled) { // only needs to switch away from sword if an external KA is enabled
+					mcInstance.thePlayer.inventory.currentItem = 5;
+				}
 			}
 		}
 		catch(Exception e) {
@@ -364,56 +367,38 @@ public class GrindBot
 	}
 
 	public void reloadKey() { // so lazy
-		try(FileInputStream inputStream = new FileInputStream("key.txt")) {	 
-			String fileKey = IOUtils.toString(inputStream);
+		String[] possibleKeyFileNames = {"key.txt", "key.txt.txt", "key", "token.txt", "token.txt.txt", "token"}; // from best to worst...
+
+		boolean foundKeyFile = false;
+		
+		for(int i = 0; i < possibleKeyFileNames.length; i++){
+			String curPossibleKeyFileName = possibleKeyFileNames[i];
 			
-			apiKey = fileKey;
+			File potentialKeyFile = new File(curPossibleKeyFileName);
 			
-			System.out.println("set key: " + fileKey);
+			if (potentialKeyFile.isFile()) {
+				// key file found, read it
+				try(FileInputStream inputStream = new FileInputStream(curPossibleKeyFileName)) {	 
+					String fileKey = IOUtils.toString(inputStream);
+					
+					apiKey = fileKey;
+					
+					System.out.println("set key: " + fileKey);
+					
+					foundKeyFile = true;
+					
+					break; // only breaks if reading key file didn't error
+				}
+				catch(Exception e) {
+					System.out.println("reading key issue");
+					apiMessage = "error reading key";
+					e.printStackTrace();
+				}
+			}
 		}
-		catch(Exception e) {
-			System.out.println("reading key issue");
-			apiMessage = "error reading key";
-			e.printStackTrace();
-
-			try(FileInputStream inputStream2 = new FileInputStream("token.txt")) {	 
-				String fileKey2 = IOUtils.toString(inputStream2);
-				
-				apiKey = fileKey2;
-				
-				System.out.println("set key2: " + fileKey2);
-			}
-			catch(Exception e2) {
-				System.out.println("reading key issue2");
-				apiMessage = "error reading key2";
-				e2.printStackTrace();
-
-				try(FileInputStream inputStream3 = new FileInputStream("key.txt.txt")) {	 
-					String fileKey3 = IOUtils.toString(inputStream3);
-					
-					apiKey = fileKey3;
-					
-					System.out.println("set key3: " + fileKey3);
-				}
-				catch(Exception e3) {
-					System.out.println("reading key issue3");
-					apiMessage = "error reading key3";
-					e3.printStackTrace();
-
-					try(FileInputStream inputStream4 = new FileInputStream("token.txt.txt")) {	 
-						String fileKey4 = IOUtils.toString(inputStream4);
-						
-						apiKey = fileKey4;
-						
-						System.out.println("set key4: " + fileKey4);
-					}
-					catch(Exception e4) {
-						System.out.println("reading key issue4");
-						apiMessage = "error reading key4";
-						e4.printStackTrace();
-					}
-				}
-			}
+		
+		if (!foundKeyFile) {
+			apiMessage = "no key file found";
 		}
 	}
 	
@@ -423,7 +408,7 @@ public class GrindBot
 			reloadKey();
 		}
 
-		// return if key is still null - reading failed
+		// return if key is still null - no key was read
 		if (apiKey.equals("null")) {
 			return;
 		}
@@ -699,6 +684,7 @@ public class GrindBot
 		// execute given instructions
 
 		if (apiText.equals("key does not exist")) {
+			// key does not exist so was probably typed wrong. reload it to allow for correction
 			reloadKey();
 		}
 		

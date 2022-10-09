@@ -4,14 +4,14 @@ Grinds pit, uses an API for instructions
 Requires an authorization key
 
 ### Usage:
-- **Important:** Create a text file in your .minecraft folder called `key.txt` and put your authorization key in there
+- Use /setkey <key> to set your authorization key
 - Press J to toggle bot
 - Press K to toggle built-in autoclicker (do not use if using external killaura or autoclicker)
 - Press F3 + P once to disable pausing when minecraft is not in focus
 
 ### Vape/other settings:
-- If using vape killaura or autoclicker then don't use built-in autoclicker
-- If using vape killaura:
+- If using Vape killaura or autoclicker then don't use built-in autoclicker
+- If using Vape killaura:
   - Set 'allowed items' to 'sword'
   - Set it to disable killaura when any gui is open
 

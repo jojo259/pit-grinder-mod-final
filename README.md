@@ -4,7 +4,7 @@ Grinds pit, uses an API for instructions
 Requires an authorization key
 
 ### Usage:
-- Use /setkey <key> to set your authorization key
+- Use /setkey \<key\> to set your authorization key
 - Press J to toggle bot
 - Press K to toggle built-in autoclicker (do not use if using external killaura or autoclicker)
 - Press F3 + P once to disable pausing when minecraft is not in focus

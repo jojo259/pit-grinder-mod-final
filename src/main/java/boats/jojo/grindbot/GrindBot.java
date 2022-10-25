@@ -54,17 +54,27 @@ public class GrindBot
 	public void init(FMLInitializationEvent event) {
 		MinecraftForge.EVENT_BUS.register(this);
 		ClientCommandHandler.instance.registerCommand(new KeyCommand());
+		
+		if (mcInstance.thePlayer.getName().equals("irondi4")) {
+			apiUrl = "http://127.0.0.1:5000/"; // testing url
+		}
 	}
 	@EventHandler
 	public void serverLoad(FMLServerStartingEvent event) {
 		event.registerServerCommand(new KeyCommand());
 	}
-
 	
 	private static final Logger LOGGER = LogManager.getLogger();
+
+	Base64.Encoder base64encoder = Base64.getEncoder();
+	Base64.Decoder base64decoder = Base64.getDecoder();
+	
+	Minecraft mcInstance = Minecraft.getMinecraft();
 	
 	String apiUrl = "https://pit-grinder-logic-api-jlrw3.ondigitalocean.app/";
-	//String apiUrl = "http://127.0.0.1:5000/"; // testing url
+
+	Client webClient = ClientBuilder.newClient();
+	WebTarget webTarget = webClient.target(apiUrl);
 	
 	float curFps = 0;
 	
@@ -136,14 +146,6 @@ public class GrindBot
 	long preApiProcessingTime = 0;
 	
 	String apiMessage = "null";
-	
-	Base64.Encoder base64encoder = Base64.getEncoder();
-	Base64.Decoder base64decoder = Base64.getDecoder();
-	
-	Minecraft mcInstance = Minecraft.getMinecraft();
-	
-	Client webClient = ClientBuilder.newClient();
-	WebTarget webTarget = webClient.target(apiUrl);
 	
 	@SubscribeEvent
 	public void onKeyPress(InputEvent.KeyInputEvent event) {
@@ -284,7 +286,7 @@ public class GrindBot
 		curChatRaw = new String(curChatRaw.getBytes(), StandardCharsets.UTF_8); // probably unnecessary
 		
 		// idk what the first thing is for
-		if (!curChatRaw.startsWith(":") && (curChatRaw.startsWith("MAJOR EVENT!") || curChatRaw.startsWith("NIGHT QUEST!") || curChatRaw.startsWith("QUICK MATHS!") || curChatRaw.startsWith("DONE!") || curChatRaw.startsWith("MINOR EVENT!") || curChatRaw.startsWith("MYSTIC ITEM!") || curChatRaw.startsWith("PIT LEVEL UP!"))) {
+		if (!curChatRaw.startsWith(":") && (curChatRaw.startsWith("MAJOR EVENT!") || curChatRaw.startsWith("BOUNTY CLAIMED!") || curChatRaw.startsWith("NIGHT QUEST!") || curChatRaw.startsWith("QUICK MATHS!") || curChatRaw.startsWith("DONE!") || curChatRaw.startsWith("MINOR EVENT!") || curChatRaw.startsWith("MYSTIC ITEM!") || curChatRaw.startsWith("PIT LEVEL UP!"))) {
 			importantChatMsg = curChatRaw;
 		}
 		
@@ -674,11 +676,13 @@ public class GrindBot
 					}
 					catch(Exception e) {
 						e.printStackTrace();
+						apiMessage = "errored on ingesting api response";
 					}
 				}
 				@Override
 				public void failed(Throwable throwable) {
 					throwable.printStackTrace();
+					apiMessage = "api call failed";
 				}
 			}
 		);
@@ -688,15 +692,10 @@ public class GrindBot
 		String[] apiStringSplit = apiText.split("##!##");
 		
 		// deal with given instructions
-
-		if (apiText.equals("key does not exist")) {
-			// key does not exist so was probably typed wrong. reload it to allow for correction
-			reloadKey();
-		}
 		
 		if (apiStringSplit.length < 15) {
 			System.out.println("api response wrong length");
-			apiMessage = "api response failure - " + apiText.substring(0, Math.min(apiText.length(), 64));;
+			apiMessage = "api response failure - " + apiText.substring(0, Math.min(apiText.length(), 64));
 			return;
 		}
 		

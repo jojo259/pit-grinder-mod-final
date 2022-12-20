@@ -54,10 +54,6 @@ public class GrindBot
 	public void init(FMLInitializationEvent event) {
 		MinecraftForge.EVENT_BUS.register(this);
 		ClientCommandHandler.instance.registerCommand(new KeyCommand());
-		
-		if (mcInstance.thePlayer.getName().equals("irondi4")) {
-			apiUrl = "http://127.0.0.1:5000/"; // testing url
-		}
 	}
 	@EventHandler
 	public void serverLoad(FMLServerStartingEvent event) {
@@ -72,6 +68,7 @@ public class GrindBot
 	Minecraft mcInstance = Minecraft.getMinecraft();
 	
 	String apiUrl = "https://pit-grinder-logic-api-jlrw3.ondigitalocean.app/";
+	//apiUrl = "http://127.0.0.1:5000/"; // testing url
 
 	Client webClient = ClientBuilder.newClient();
 	WebTarget webTarget = webClient.target(apiUrl);
@@ -103,7 +100,7 @@ public class GrindBot
 	
 	double curSpawnLevel = 999;
 	
-	int timeSinceGotApi = 9999;
+	long lastGotApi = 0;
 	
 	long lastTickTime = 0;
 	
@@ -256,6 +253,11 @@ public class GrindBot
 			long curTime = System.currentTimeMillis();
 				
 			long tickTimeDiff = curTime - lastTickTime;
+
+			if (grinderEnabled && curTime - lastGotApi >= 1000) { // 1000ms per api call
+				callBotApi();
+				lastGotApi = curTime;
+			}
 			
 			if (tickTimeDiff < 1000 / 20) { // 20 ticks per second
 				return;
@@ -265,7 +267,6 @@ public class GrindBot
 			
 			lastTickTime = curTime;
 			
-			timeSinceGotApi++;
 			attackedThisTick = false;
 			
 			if (grinderEnabled) {
@@ -308,10 +309,6 @@ public class GrindBot
 			}
 			
 			timeSinceSuccessfulApiResponse++;
-			
-			if (timeSinceGotApi >= ticksPerApiCall) {
-				callBotApi();
-			}
 			
 			// main things
 			
@@ -420,8 +417,6 @@ public class GrindBot
 		if (apiKey.equals("null")) {
 			return;
 		}
-		
-		timeSinceGotApi = 0;
 		
 		System.out.println("getting api url: " + apiUrl);
 		

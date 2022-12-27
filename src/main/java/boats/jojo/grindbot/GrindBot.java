@@ -45,7 +45,7 @@ import net.minecraftforge.fml.common.gameevent.InputEvent;
 @Mod(
 		modid = "gb",
 		name = "gb",
-		version = "1.5",
+		version = "1.6",
 		acceptedMinecraftVersions = "1.8.9"
 )
 public class GrindBot

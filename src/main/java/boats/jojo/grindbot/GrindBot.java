@@ -256,7 +256,6 @@ public class GrindBot
 
 			if (grinderEnabled && curTime - lastGotApi >= 1000) { // 1000ms per api call
 				callBotApi();
-				lastGotApi = curTime;
 			}
 			
 			if (tickTimeDiff < 1000 / 20) { // 20 ticks per second
@@ -830,6 +829,7 @@ public class GrindBot
 		System.out.println("total processing time was " + apiLastTotalProcessingTime + "ms");
 		
 		timeSinceSuccessfulApiResponse = 0;
+		lastGotApi = System.currentTimeMillis() - apiLastTotalProcessingTime;
 	}
 	
 	public void doMovementKeys() { // so long

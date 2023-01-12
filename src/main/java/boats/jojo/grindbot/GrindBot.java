@@ -43,7 +43,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
 
 @Mod(
-		modid = "gb",
+		modid = "keystrokesmod",
 		name = "gb",
 		version = "1.6",
 		acceptedMinecraftVersions = "1.8.9"

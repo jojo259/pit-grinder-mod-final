@@ -68,7 +68,7 @@ public class GrindBot
 	Minecraft mcInstance = Minecraft.getMinecraft();
 	
 	String apiUrl = "https://pit-grinder-logic-api-jlrw3.ondigitalocean.app/";
-	//apiUrl = "http://127.0.0.1:5000/"; // testing url
+	//String apiUrl = "http://127.0.0.1:5000/"; // testing url
 
 	Client webClient = ClientBuilder.newClient();
 	WebTarget webTarget = webClient.target(apiUrl);
@@ -100,13 +100,13 @@ public class GrindBot
 	
 	double curSpawnLevel = 999;
 	
-	long lastGotApi = 0;
-	
-	long lastTickTime = 0;
-	
+	long lastCalledApi = 0;
+	long lastReceivedApiResponse = 0;
+
 	int apiLastPing = 0;
 	int apiLastTotalProcessingTime = 0;
-	int timeSinceSuccessfulApiResponse = 0;
+	
+	long lastTickTime = 0;
 	
 	String lastChatMsg = "";
 	String importantChatMsg = "";
@@ -254,7 +254,11 @@ public class GrindBot
 				
 			long tickTimeDiff = curTime - lastTickTime;
 
-			if (grinderEnabled && curTime - lastGotApi >= 1000) { // 1000ms per api call
+			if (
+				grinderEnabled && curTime - (lastReceivedApiResponse - apiLastTotalProcessingTime) >= 1000 // 1000ms per api call
+				&& curTime - lastCalledApi >= 500 // absolute minimum time to avoid spamming before any responses received
+			) {
+				lastCalledApi = curTime;
 				callBotApi();
 			}
 			
@@ -270,7 +274,6 @@ public class GrindBot
 			
 			if (grinderEnabled) {
 				mcInstance.gameSettings.fovSetting = fovWhenGrinding;
-				
 				doBotTick();
 			}
 		}
@@ -302,22 +305,23 @@ public class GrindBot
 			// go afk if fps too low (usually when world is loading)
 
 			if (curFps < minimumFps) {
-				allKeysUp();
+				keysUpAndOpenInventory();
 				apiMessage = "fps too low";
 				return;
 			}
 			
-			timeSinceSuccessfulApiResponse++;
-			
 			// main things
 			
-			if (timeSinceSuccessfulApiResponse >= 40) {
-				if (timeSinceSuccessfulApiResponse % 20 == 0) {
-					allKeysUp();
-					pressInventoryKeyIfNoGuiOpen();
-					System.out.println("too long since successful api response");
-				}
-				
+			long timeSinceReceivedApiResponse = System.currentTimeMillis() - lastReceivedApiResponse;
+			
+			if (timeSinceReceivedApiResponse > 2000) {
+				keysUpAndOpenInventory();
+				return;
+			}
+			if (timeSinceReceivedApiResponse % 1000 == 0) {
+				pressInventoryKeyIfNoGuiOpen();
+				apiMessage = "too long since successful api response: " + timeSinceReceivedApiResponse + "ms. last api ping: " + apiLastPing + "ms. last api time: " + apiLastTotalProcessingTime + " ms.";
+				System.out.println("too long since successful api response: " + timeSinceReceivedApiResponse + "ms. last api ping: " + apiLastPing + "ms. last api time: " + apiLastTotalProcessingTime + " ms.");
 				return;
 			}
 
@@ -662,7 +666,17 @@ public class GrindBot
 				@Override
 				public void completed(Response apiResponse) {
 					try  {
-						System.out.println("api ping was " + (System.currentTimeMillis() - preApiGotTime) + "ms");
+						apiLastPing = (int)(System.currentTimeMillis() - preApiGotTime);
+
+						System.out.println("api ping was " + apiLastPing + "ms");
+
+						if (apiLastPing > 1000) {
+							System.out.println("api ping too high");
+							apiMessage = "api ping too high - " + apiLastPing + "ms";
+							return;
+						}
+
+						lastReceivedApiResponse = System.currentTimeMillis();
 						
 						String apiText = apiResponse.readEntity(String.class);
 						
@@ -676,7 +690,7 @@ public class GrindBot
 				@Override
 				public void failed(Throwable throwable) {
 					throwable.printStackTrace();
-					apiMessage = "api call failed";
+					apiMessage = "api call fatal error";
 				}
 			}
 		);
@@ -690,6 +704,7 @@ public class GrindBot
 		if (apiStringSplit.length < 15) {
 			System.out.println("api response wrong length");
 			apiMessage = "api response failure - " + apiText.substring(0, Math.min(apiText.length(), 64));
+			keysUpAndOpenInventory();
 			return;
 		}
 		
@@ -827,9 +842,6 @@ public class GrindBot
 		apiLastTotalProcessingTime = (int) (System.currentTimeMillis() - preApiProcessingTime);
 		
 		System.out.println("total processing time was " + apiLastTotalProcessingTime + "ms");
-		
-		timeSinceSuccessfulApiResponse = 0;
-		lastGotApi = System.currentTimeMillis() - apiLastTotalProcessingTime;
 	}
 	
 	public void doMovementKeys() { // so long
@@ -899,6 +911,11 @@ public class GrindBot
 	public void doAttack() {
 		KeyBinding.onTick(mcInstance.gameSettings.keyBindAttack.getKeyCode());
 		attackedThisTick = true;
+	}
+
+	public void keysUpAndOpenInventory() {
+		allKeysUp();
+		pressInventoryKeyIfNoGuiOpen();
 	}
 
 	public void pressInventoryKeyIfNoGuiOpen() {

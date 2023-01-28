@@ -701,8 +701,8 @@ public class GrindBot
 		
 		// deal with given instructions
 		
-		if (apiStringSplit.length < 15) {
-			System.out.println("api response wrong length");
+		if (!apiText.contains("##!##")) {
+			System.out.println("api response error");
 			apiMessage = "api response failure - " + apiText.substring(0, Math.min(apiText.length(), 64));
 			keysUpAndOpenInventory();
 			return;

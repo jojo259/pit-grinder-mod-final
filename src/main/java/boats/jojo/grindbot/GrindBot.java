@@ -315,13 +315,14 @@ public class GrindBot
 			long timeSinceReceivedApiResponse = System.currentTimeMillis() - lastReceivedApiResponse;
 			
 			if (timeSinceReceivedApiResponse > 2000) {
-				keysUpAndOpenInventory();
-				return;
-			}
-			if (timeSinceReceivedApiResponse % 1000 == 0) {
-				pressInventoryKeyIfNoGuiOpen();
-				apiMessage = "too long since successful api response: " + timeSinceReceivedApiResponse + "ms. last api ping: " + apiLastPing + "ms. last api time: " + apiLastTotalProcessingTime + " ms.";
-				System.out.println("too long since successful api response: " + timeSinceReceivedApiResponse + "ms. last api ping: " + apiLastPing + "ms. last api time: " + apiLastTotalProcessingTime + " ms.");
+				allKeysUp();
+
+				if (Math.floor(timeSinceReceivedApiResponse / 50) % 20 == 0) {
+					pressInventoryKeyIfNoGuiOpen();
+					apiMessage = "too long since successful api response: " + timeSinceReceivedApiResponse + "ms. last api ping: " + apiLastPing + "ms. last api time: " + apiLastTotalProcessingTime + " ms.";
+					System.out.println("too long since successful api response: " + timeSinceReceivedApiResponse + "ms. last api ping: " + apiLastPing + "ms. last api time: " + apiLastTotalProcessingTime + " ms.");
+				}
+
 				return;
 			}
 

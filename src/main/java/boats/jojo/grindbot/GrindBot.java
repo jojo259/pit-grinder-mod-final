@@ -675,8 +675,6 @@ public class GrindBot
 							apiMessage = "api ping too high - " + apiLastPing + "ms";
 							return;
 						}
-
-						lastReceivedApiResponse = System.currentTimeMillis();
 						
 						String apiText = apiResponse.readEntity(String.class);
 						
@@ -839,6 +837,7 @@ public class GrindBot
 			curSpawnLevel = Double.parseDouble(apiStringSplit[14]);
 		}
 		
+		lastReceivedApiResponse = System.currentTimeMillis();
 		apiLastTotalProcessingTime = (int) (System.currentTimeMillis() - preApiProcessingTime);
 		
 		System.out.println("total processing time was " + apiLastTotalProcessingTime + "ms");

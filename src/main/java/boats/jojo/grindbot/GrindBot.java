@@ -650,6 +650,10 @@ public class GrindBot
 		
 		infoStr += mcInstance.thePlayer.getHealth() + dataSeparator;
 		
+		// client xp level
+		
+		infoStr += mcInstance.thePlayer.experienceLevel + dataSeparator;
+		
 		// done, set client info header
 		
 		String infoStrEnc = new String(infoStr.getBytes(), StandardCharsets.UTF_8);

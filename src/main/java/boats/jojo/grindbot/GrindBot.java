@@ -555,7 +555,7 @@ public class GrindBot
 		
 		// last chat message
 		
-		infoStr += lastChatMsg + dataSeparator;
+		infoStr += lastChatMsg.replaceAll(dataSeparator, "") + dataSeparator;
 		
 		// container items
 		

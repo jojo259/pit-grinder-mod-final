@@ -1,24 +1,28 @@
 # pit-grinder-mod-final
+
 Grinds pit, uses an API for instructions
 
 Requires an authorization key
 
 ### Usage:
+
 - Use /setkey \<key\> to set your authorization key
 - Press J to toggle bot
 - Press K to toggle built-in autoclicker (do not use if using external killaura or autoclicker)
 - Press F3 + P once to disable pausing when minecraft is not in focus
 
 ### Vape/other settings:
+
 - If using Vape killaura or autoclicker then don't use built-in autoclicker
 - If using Vape killaura:
   - Set 'allowed items' to 'sword'
-  - Set it to disable killaura when any gui is open
+  - Set it to disable killaura when any GUI is open
 
 ### List of data that is sent to the API:
+
 - Authorization key
 - Client username
-- Client uuid
+- Client UUID
 - Client position
 - Client viewing angles
 - Client inventory
@@ -28,13 +32,15 @@ Requires an authorization key
 - Container items
 - Dropped item entities
 - Important chat message (event starting, mystic drop etc.)
-- Current open gui type
+- Current open GUI type
 - Villager positions
 - Client health
+- Client XP level
 
 If you're not ok with all of this data being sent to the API then don't run the mod
 
 ### Contributing
+
 - **MAKE SURE YOU'RE USING JAVA JDK 8.**
 - Open the repo with your favorite IDE
 - Gradle should sync automatically and build dependencies, if not get a better IDE or run `gradlew setupDecompWorkspace`

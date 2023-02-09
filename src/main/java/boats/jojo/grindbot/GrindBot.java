@@ -425,27 +425,6 @@ public class GrindBot
 		System.out.println("getting api url: " + apiUrl);
 		
 		preApiProcessingTime = System.currentTimeMillis();
-
-		/*
-
-		list of data that is sent to the API:
-			-authorization key
-			-client username
-			-client uuid
-			-client position
-			-client viewing angles
-			-client inventory
-			-all visible player usernames + positions + healths + armor values
-			-middle block of spawn
-			-last player chat message
-			-container items
-			-dropped item entities
-			-important chat msg (event starting, mystic drop etc.)
-			-current open gui type
-			-villager positions
-			-client health
-
-		*/
 		
 		// construct client info string
 		

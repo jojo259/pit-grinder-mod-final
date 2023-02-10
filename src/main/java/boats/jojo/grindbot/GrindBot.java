@@ -78,7 +78,6 @@ public class GrindBot
 	double mouseTargetX = 0;
 	double mouseTargetY = 0;
 	double mouseTargetZ = 0;
-	double mouseCurSpeed = 0;
 	
 	boolean attackedThisTick = false;
 	
@@ -133,6 +132,8 @@ public class GrindBot
 	double keyChanceUseUp = 0;
 	
 	double keyAttackChance = 0;
+
+	double mouseSpeed = 0;
 	
 	boolean autoClickerEnabled = false;
 	long lastToggledAutoClicker = 0;
@@ -820,6 +821,12 @@ public class GrindBot
 		if (!apiStringSplit[14].equals("null")) {
 			curSpawnLevel = Double.parseDouble(apiStringSplit[14]);
 		}
+
+		if (apiStringSplit.length >= 16) { // can be removed when everyone has updated
+			if (!apiStringSplit[15].equals("null")) {
+				mouseSpeed = Double.parseDouble(apiStringSplit[15]);
+			}
+		}
 		
 		lastReceivedApiResponse = System.currentTimeMillis();
 		apiLastTotalProcessingTime = (int) (System.currentTimeMillis() - preApiProcessingTime);
@@ -973,7 +980,7 @@ public class GrindBot
 		
 		// calculate mouse speed
 		
-		mouseCurSpeed = 16;
+		double mouseCurSpeed = mouseSpeed;
 		
 		mouseCurSpeed += timeSinWave (40)  * 2;
 		mouseCurSpeed += timeSinWave (50)  * 2;

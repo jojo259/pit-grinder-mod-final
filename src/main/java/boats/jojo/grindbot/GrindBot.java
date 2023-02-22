@@ -10,17 +10,17 @@ import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.lwjgl.input.Keyboard;
-
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.ClientBuilder;
-import jakarta.ws.rs.client.InvocationCallback;
-import jakarta.ws.rs.client.WebTarget;
-import jakarta.ws.rs.core.Response;
 
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
+import java.util.concurrent.ForkJoinPool;
+import java.io.IOException;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
@@ -69,9 +69,6 @@ public class GrindBot
 	
 	String apiUrl = "https://pit-grinder-logic-api-jlrw3.ondigitalocean.app/";
 	//String apiUrl = "http://127.0.0.1:5000/"; // testing url
-
-	Client webClient = ClientBuilder.newClient();
-	WebTarget webTarget = webClient.target(apiUrl);
 	
 	float curFps = 0;
 	
@@ -645,38 +642,38 @@ public class GrindBot
 		ticksPerApiCall = 20;
 		
 		long preApiGotTime = System.currentTimeMillis();
-		
-		webTarget.request().header("clientinfo", infoStrEnc).async().get(
-			new InvocationCallback<Response>() {
-				@Override
-				public void completed(Response apiResponse) {
-					try  {
-						apiLastPing = (int)(System.currentTimeMillis() - preApiGotTime);
 
-						System.out.println("api ping was " + apiLastPing + "ms");
+		ForkJoinPool.commonPool().execute(() -> {
+			HttpGet get = new HttpGet(apiUrl);
+			get.setHeader("clientinfo", infoStrEnc);
 
-						if (apiLastPing > 1000) {
-							System.out.println("api ping too high");
-							apiMessage = "api ping too high - " + apiLastPing + "ms";
-							return;
-						}
-						
-						String apiText = apiResponse.readEntity(String.class);
-						
-						ingestApiResponse(apiText);
-					}
-					catch(Exception e) {
-						e.printStackTrace();
-						apiMessage = "errored on ingesting api response";
-					}
-				}
-				@Override
-				public void failed(Throwable throwable) {
-					throwable.printStackTrace();
-					apiMessage = "api call fatal error";
-				}
+			String apiResponse;
+			try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
+				HttpResponse response = httpclient.execute(get);
+				apiResponse = IOUtils.toString(response.getEntity().getContent());
+			} catch (IOException e) {
+				e.printStackTrace();
+				apiMessage = "api call fatal error";
+				return;
 			}
-		);
+
+			apiLastPing = (int)(System.currentTimeMillis() - preApiGotTime);
+
+			System.out.println("api ping was " + apiLastPing + "ms");
+
+			if (apiLastPing > 1000) {
+				System.out.println("api ping too high");
+				apiMessage = "api ping too high - " + apiLastPing + "ms";
+				return;
+			}
+
+			try {
+				ingestApiResponse(apiResponse);
+			} catch (Exception exception) {
+				exception.printStackTrace();
+				apiMessage = "errored on ingesting api response";
+			}
+		});
 	}
 	
 	public void ingestApiResponse(String apiText) {

@@ -10,6 +10,7 @@ Requires an authorization key
 - Press J to toggle bot
 - Press K to toggle built-in autoclicker (do not use if using external killaura or autoclicker)
 - Press F3 + P once to disable pausing when minecraft is not in focus
+- Your Hypixel language must be set to English
 
 ### Vape/other settings:
 

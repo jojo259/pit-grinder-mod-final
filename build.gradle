@@ -63,13 +63,6 @@ dependencies {
     // for more info...
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
-	
-	// https://mvnrepository.com/artifact/org.glassfish.jersey.core/jersey-client
-	compile group: 'org.glassfish.jersey.core', name: 'jersey-client', version: '3.0.8'
-	compile 'org.glassfish.jersey.inject:jersey-hk2:3.0.8'
-	
-	runtime group: 'org.glassfish.jersey.core', name: 'jersey-client', version: '3.0.8'
-	runtime 'org.glassfish.jersey.inject:jersey-hk2:3.0.8'
 }
 
 processResources

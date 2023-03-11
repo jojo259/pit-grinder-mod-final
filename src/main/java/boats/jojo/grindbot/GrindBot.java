@@ -744,7 +744,7 @@ public class GrindBot {
 		if (!apiStringSplit[1].equals("null")) {
 			String chatToSend = apiStringSplit[1];
 			if (chatToSend.contains("/play pit") && (currentMajor != "")) { // might cause bot get to suck in main lob?
-				mcInstance.thePlayer.sendChatMessage("/oof")
+				mcInstance.thePlayer.sendChatMessage("/oof");
 			} else if (!chatToSend.contains("/trade")) { // lol
 				mcInstance.thePlayer.sendChatMessage(apiStringSplit[1]);
 			}

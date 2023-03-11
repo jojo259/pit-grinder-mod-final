@@ -369,13 +369,11 @@ public class GrindBot {
 				}
 				doMovementKeys();
 
-				/*
-				 * if (mcInstance.thePlayer.posY < curSpawnLevel - 10) {
-				 * setKeyDown(1);
-				 * } else {
-				 * setKeyUp(1);
-				 * }
-				 */
+				if (mcInstance.thePlayer.posY < curSpawnLevel - 10) {
+					setKeyDown(1);
+				} else {
+					setKeyUp(1);
+				}
 
 			} else {
 				allKeysUp();

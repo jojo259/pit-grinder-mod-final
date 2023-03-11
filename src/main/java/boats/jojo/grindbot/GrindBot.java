@@ -367,13 +367,14 @@ public class GrindBot {
 				if (mouseTargetX != 0 || mouseTargetY != 0 || mouseTargetZ != 0) { // dumb null check
 					mouseMove();
 				}
-				doMovementKeys();
 
 				if (mcInstance.thePlayer.posY < curSpawnLevel - 10) {
 					setKeyDown(1);
 				} else {
 					setKeyUp(1);
 				}
+
+				doMovementKeys();
 
 			} else {
 				allKeysUp();

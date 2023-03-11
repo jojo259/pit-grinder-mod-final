@@ -81,6 +81,8 @@ public class GrindBot {
 	String curTargetName = "null";
 	String[] nextTargetNames = null;
 
+	boolean forwardDown = false;
+
 	static String apiKey = "null";
 
 	int minimumFps = 0;
@@ -369,9 +371,11 @@ public class GrindBot {
 				}
 
 				if (mcInstance.thePlayer.posY < curSpawnLevel - 10) {
-					setKeyDown(1);
-				} else {
+					setKeyDown(1); // Always go forward if down in mid.
+					forwardDown = true;
+				} else if (forwardDown) {
 					setKeyUp(1);
+					forwardDown = false;
 				}
 
 				doMovementKeys();
@@ -739,7 +743,9 @@ public class GrindBot {
 
 		if (!apiStringSplit[1].equals("null")) {
 			String chatToSend = apiStringSplit[1];
-			if (!chatToSend.contains("/trade")) { // lol
+			if (chatToSend.contains("/play pit") && (currentMajor != "")) { // might cause bot get to suck in main lob?
+				mcInstance.thePlayer.sendChatMessage("/oof")
+			} else if (!chatToSend.contains("/trade")) { // lol
 				mcInstance.thePlayer.sendChatMessage(apiStringSplit[1]);
 			}
 		}

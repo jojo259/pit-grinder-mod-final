@@ -332,7 +332,8 @@ public class GrindBot {
 			long timeSinceReceivedApiResponse = System.currentTimeMillis() - lastReceivedApiResponse;
 
 			if (timeSinceReceivedApiResponse > 5000) {
-				allKeysUp();
+				if (mcInstance.thePlayer.posY > curSpawnLevel - 5)
+					allKeysUp();
 
 				if (Math.floor(timeSinceReceivedApiResponse / 50) % 20 == 0) {
 					// pressInventoryKeyIfNoGuiOpen();
@@ -372,9 +373,12 @@ public class GrindBot {
 
 				if (mcInstance.thePlayer.posY < curSpawnLevel - 10) {
 					setKeyDown(1); // Always go forward if down in mid.
+					setKeyDown(5); // Always jump if down
+					setKeyUp(2);
 					forwardDown = true;
 				} else if (forwardDown) {
-					setKeyUp(1);
+					setKeyUp(1); // Stop in spawn
+					setKeyUp(5);
 					forwardDown = false;
 				}
 
@@ -949,8 +953,10 @@ public class GrindBot {
 	}
 
 	public void keysUpAndOpenInventory() {
-		allKeysUp();
-		pressInventoryKeyIfNoGuiOpen();
+		if (mcInstance.thePlayer.posY > curSpawnLevel - 5) {
+			allKeysUp();
+			pressInventoryKeyIfNoGuiOpen();
+		}
 	}
 
 	public void pressInventoryKeyIfNoGuiOpen() {

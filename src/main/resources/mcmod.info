@@ -1,8 +1,8 @@
 [
 {
-  "modid": "keystrokesmod",
+  "modid": "vibrantparticlesmod",
   "name": "gb",
-  "description": "grinds pit",
+  "description": "makes particles vibrant",
   "version": "1.10",
   "mcversion": "1.8.9",
   "url": "",

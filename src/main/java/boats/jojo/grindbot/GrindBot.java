@@ -331,7 +331,7 @@ public class GrindBot {
 
 			long timeSinceReceivedApiResponse = System.currentTimeMillis() - lastReceivedApiResponse;
 
-			if (timeSinceReceivedApiResponse > 5000) {
+			if (timeSinceReceivedApiResponse > 2000) {
 				if (mcInstance.thePlayer.posY > curSpawnLevel - 5)
 					allKeysUp();
 
@@ -732,7 +732,7 @@ public class GrindBot {
 		if (!apiText.contains("##!##")) {
 			System.out.println("api response error");
 			apiMessage = "api response failure - " + apiText.substring(0, Math.min(apiText.length(), 64));
-			keysUpAndOpenInventory();
+			// keysUpAndOpenInventory();
 			return;
 		}
 

@@ -5,6 +5,8 @@ import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
 
+import javax.swing.plaf.metal.MetalBorders.PaletteBorder;
+
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import org.apache.commons.io.IOUtils;
@@ -77,6 +79,7 @@ public class GrindBot {
 	double mouseTargetZ = 0;
 
 	boolean attackedThisTick = false;
+	boolean botInPit = false;
 
 	String curTargetName = "null";
 	String[] nextTargetNames = null;
@@ -303,6 +306,9 @@ public class GrindBot {
 			}
 		}
 
+		if (curChatRaw.toLowerCase().contains("pit"))
+			botInPit = true;
+
 		// logging chat messages
 
 		if (curChatRaw.split(":").length <= 1) {
@@ -368,29 +374,31 @@ public class GrindBot {
 				mouseTargetZ = curTargetPos[2];
 			}
 
-			if (mcInstance.thePlayer.posY < curSpawnLevel - 4) {
-				double[] curTargetPos = getPlayerPos(curTargetName);
-				int counter = 0;
-				while (Math.abs(curTargetPos[0] - mcInstance.thePlayer.posX) > 3.5 &&
-						Math.abs(curTargetPos[1] - mcInstance.thePlayer.posY) > 4 &&
-						Math.abs(curTargetPos[2] - mcInstance.thePlayer.posZ) > 3.5) {
-					curTargetName = nextTargetNames[0];
-					nextTargetNames = Arrays.copyOfRange(nextTargetNames, 1, nextTargetNames.length);
-					curTargetPos = getPlayerPos(curTargetName);
-					counter++; // Count every time it checks a target for req
+			if (mcInstance.thePlayer.posY < curSpawnLevel - 4 && botInPit) {
+				List<EntityPlayer> playerList = mcInstance.theWorld.playerEntities;
+				playerList = playerList
+						.stream()
+						.filter(player -> !player.isInvisible())
+						.filter(player -> !player.getName().equals(mcInstance.thePlayer.getName()))
+						.collect(Collectors.toList());
 
-					// If every target has been checked and none are close, set target to 0, 0
-					if (counter == nextTargetNames.length - 1) {
-						curTargetPos[0] = 0;
-						curTargetPos[1] = mcInstance.thePlayer.posY;
-						curTargetPos[2] = 0;
+				mouseTargetX = 0;
+				mouseTargetY = mcInstance.thePlayer.posY;
+				mouseTargetZ = 0;
+
+				for (int i = 0; i < playerList.size() - 1; i++) {
+					String playerName = playerList.get(i).getName();
+					double[] curTargetPos = getPlayerPos(playerName);
+
+					if (Math.abs(curTargetPos[0] - mcInstance.thePlayer.posX) <= 3.5 &&
+							Math.abs(curTargetPos[1] - mcInstance.thePlayer.posY) < 3 &&
+							Math.abs(curTargetPos[2] - mcInstance.thePlayer.posZ) <= 3.5) {
+						mouseTargetX = curTargetPos[0];
+						mouseTargetY = curTargetPos[1] + 1;
+						mouseTargetZ = curTargetPos[2];
 						break;
 					}
 				}
-
-				mouseTargetX = curTargetPos[0];
-				mouseTargetY = curTargetPos[1] + 1;
-				mouseTargetZ = curTargetPos[2];
 			}
 
 			if (mcInstance.currentScreen == null) {
@@ -773,6 +781,7 @@ public class GrindBot {
 		}
 
 		if (!apiStringSplit[1].equals("null")) {
+			botInPit = true;
 			String chatToSend = apiStringSplit[1];
 			if (chatToSend.contains("/play pit") && (currentMajor != "")) { // might cause bot get to suck in main lob?
 				mcInstance.thePlayer.sendChatMessage("/oof");

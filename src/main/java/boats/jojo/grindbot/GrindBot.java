@@ -69,6 +69,8 @@ public class GrindBot
 	
 	String apiUrl = "https://pit-grinder-logic-api-jlrw3.ondigitalocean.app/";
 	//String apiUrl = "http://127.0.0.1:5000/"; // testing url
+
+	boolean loggingEnabled = false;
 	
 	float curFps = 0;
 	
@@ -328,7 +330,7 @@ public class GrindBot
 				double[] curTargetPos = getPlayerPos(curTargetName);
 				
 				if (curTargetPos[1] > mcInstance.thePlayer.posY + 4 && nextTargetNames.length > 0) {
-					System.out.println("switching to next target " + nextTargetNames[0] + " because Y of " + curTargetPos[1] + " too high");
+					makeLog("switching to next target " + nextTargetNames[0] + " because Y of " + curTargetPos[1] + " too high");
 					
 					curTargetName = nextTargetNames[0];
 					nextTargetNames = Arrays.copyOfRange(nextTargetNames, 1, nextTargetNames.length);
@@ -420,7 +422,7 @@ public class GrindBot
 			return;
 		}
 		
-		System.out.println("getting api url: " + apiUrl);
+		makeLog("getting api url: " + apiUrl);
 		
 		preApiProcessingTime = System.currentTimeMillis();
 		
@@ -635,7 +637,7 @@ public class GrindBot
 		
 		String infoStrEnc = new String(infoStr.getBytes(), StandardCharsets.UTF_8);
 		
-		System.out.println("api info header length is " + infoStrEnc.length() + " chars");
+		makeLog("api info header length is " + infoStrEnc.length() + " chars");
 		
 		// do request
 		
@@ -659,10 +661,10 @@ public class GrindBot
 
 			apiLastPing = (int)(System.currentTimeMillis() - preApiGotTime);
 
-			System.out.println("api ping was " + apiLastPing + "ms");
+			makeLog("api ping was " + apiLastPing + "ms");
 
 			if (apiLastPing > 1000) {
-				System.out.println("api ping too high");
+				makeLog("api ping too high");
 				apiMessage = "api ping too high - " + apiLastPing + "ms";
 				return;
 			}
@@ -682,7 +684,7 @@ public class GrindBot
 		// deal with given instructions
 		
 		if (!apiText.contains("##!##")) {
-			System.out.println("api response error");
+			makeLog("api response error");
 			apiMessage = "api response failure - " + apiText.substring(0, Math.min(apiText.length(), 64));
 			keysUpAndOpenInventory();
 			return;
@@ -713,7 +715,7 @@ public class GrindBot
 			String[] keyChancesStringSplit = apiStringSplit[3].split(":::");
 			
 			if (keyChancesStringSplit.length != 15) {
-				System.out.println("key chances string split wrong length");
+				makeLog("key chances string split wrong length");
 				apiMessage = "api key chances failed";
 				return;
 			}
@@ -758,7 +760,7 @@ public class GrindBot
 			
 			int containerItemToPress = Integer.parseInt(apiStringSplit[5]);
 			
-			System.out.println("pressing container item " + containerItemToPress);
+			makeLog("pressing container item " + containerItemToPress);
 			
 			mcInstance.playerController.windowClick(mcInstance.thePlayer.openContainer.windowId, containerItemToPress, 1, 2, mcInstance.thePlayer);
 		}
@@ -768,7 +770,7 @@ public class GrindBot
 			
 			int inventoryItemToDrop = Integer.parseInt(apiStringSplit[6]);
 			
-			System.out.println("dropping inventory item " + inventoryItemToDrop);
+			makeLog("dropping inventory item " + inventoryItemToDrop);
 			
 			mcInstance.playerController.windowClick(mcInstance.thePlayer.openContainer.windowId, inventoryItemToDrop, 1, 4, mcInstance.thePlayer);
 		}
@@ -778,7 +780,7 @@ public class GrindBot
 			
 			int inventoryItemToMove = Integer.parseInt(apiStringSplit[7]);
 			
-			System.out.println("moving inventory item " + inventoryItemToMove);
+			makeLog("moving inventory item " + inventoryItemToMove);
 			
 			mcInstance.playerController.windowClick(mcInstance.thePlayer.openContainer.windowId, inventoryItemToMove, 1, 1, mcInstance.thePlayer);
 		}
@@ -828,7 +830,7 @@ public class GrindBot
 		lastReceivedApiResponse = System.currentTimeMillis();
 		apiLastTotalProcessingTime = (int) (System.currentTimeMillis() - preApiProcessingTime);
 		
-		System.out.println("total processing time was " + apiLastTotalProcessingTime + "ms");
+		makeLog("total processing time was " + apiLastTotalProcessingTime + "ms");
 	}
 	
 	public void doMovementKeys() { // so long
@@ -1044,5 +1046,11 @@ public class GrindBot
 			rotX = -90;
 		}
 		return rotX;
+	}
+
+	public void makeLog(String logStr) {
+		if (loggingEnabled) {
+			System.out.println(logStr);
+		}
 	}
 }

@@ -383,7 +383,7 @@ public class GrindBot {
 						.collect(Collectors.toList());
 
 				mouseTargetX = 0;
-				mouseTargetY = mcInstance.thePlayer.posY;
+				mouseTargetY = mcInstance.thePlayer.posY + 1;
 				mouseTargetZ = 0;
 
 				for (int i = 0; i < playerList.size() - 1; i++) {

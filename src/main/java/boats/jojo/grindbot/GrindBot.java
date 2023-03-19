@@ -352,13 +352,40 @@ public class GrindBot {
 				double[] curTargetPos = getPlayerPos(curTargetName);
 
 				if (curTargetPos[1] > mcInstance.thePlayer.posY + 4 && nextTargetNames.length > 0) {
-					System.out.println("switching to next target " + nextTargetNames[0] + " because Y of "
+					System.out.println("switching to next target " + nextTargetNames[0] +
+							" because Y of "
 							+ curTargetPos[1] + " too high");
 
 					curTargetName = nextTargetNames[0];
-					nextTargetNames = Arrays.copyOfRange(nextTargetNames, 1, nextTargetNames.length);
+					nextTargetNames = Arrays.copyOfRange(nextTargetNames, 1,
+							nextTargetNames.length);
 
 					curTargetPos = getPlayerPos(curTargetName);
+				}
+
+				mouseTargetX = curTargetPos[0];
+				mouseTargetY = curTargetPos[1] + 1;
+				mouseTargetZ = curTargetPos[2];
+			}
+
+			if (mcInstance.thePlayer.posY < curSpawnLevel - 4) {
+				double[] curTargetPos = getPlayerPos(curTargetName);
+				int counter = 0;
+				while (Math.abs(curTargetPos[0] - mcInstance.thePlayer.posX) > 3.5 &&
+						Math.abs(curTargetPos[1] - mcInstance.thePlayer.posY) > 4 &&
+						Math.abs(curTargetPos[2] - mcInstance.thePlayer.posZ) > 3.5) {
+					curTargetName = nextTargetNames[0];
+					nextTargetNames = Arrays.copyOfRange(nextTargetNames, 1, nextTargetNames.length);
+					curTargetPos = getPlayerPos(curTargetName);
+					counter++; // Count every time it checks a target for req
+
+					// If every target has been checked and none are close, set target to 0, 0
+					if (counter == nextTargetNames.length - 1) {
+						curTargetPos[0] = 0;
+						curTargetPos[1] = mcInstance.thePlayer.posY;
+						curTargetPos[2] = 0;
+						break;
+					}
 				}
 
 				mouseTargetX = curTargetPos[0];

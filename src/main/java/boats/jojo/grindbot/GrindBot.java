@@ -632,6 +632,10 @@ public class GrindBot
 		// client xp level
 		
 		infoStr += mcInstance.thePlayer.experienceLevel + dataSeparator;
+
+		// replace newlines because they mess with the header
+
+		infoStr = infoStr.replaceAll("\n", " ");
 		
 		// done, set client info header
 		

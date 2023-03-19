@@ -73,6 +73,10 @@ public class GrindBot {
 	String currentMajor = "";
 	String[] majorList = { "beast", "spire", "robbery", "team deathmatch", "pizza", "raffle", "squads", "blockhead",
 			"rage pit" };
+	String[] chatFirst = { "buying ", "who has ", "anyone have ", "looking for " };
+	String[] chatSecond = { "vile ", "fresh pants ", "red pants ", "fresh sword ", "mystic sword ", "fresh bow ",
+			"mystic bow " };
+	String[] chatThird = { "4k gold ", "5k gold ", "3500 gold", "3k ", " 5k", " 5000 gold" };
 
 	double mouseTargetX = 0;
 	double mouseTargetY = 0;
@@ -309,8 +313,25 @@ public class GrindBot {
 		if (curChatRaw.toLowerCase().contains("pit"))
 			botInPit = true;
 
-		// logging chat messages
+		if (curChatRaw.toLowerCase().contains("limbo"))
+			botInPit = false;
 
+		// Send random chats on death
+		if (curChatRaw.toLowerCase().contains("death")) {
+			int random = (int) (Math.random() * 100);
+			if (random == 2) { // 1% chance on every death
+				mcInstance.thePlayer.sendChatMessage(chatFirst[(int) (Math.random() * chatFirst.length)]
+						+ chatSecond[(int) (Math.random() * chatSecond.length)]
+						+ chatThird[(int) (Math.random() * chatThird.length)]);
+			}
+
+			if (random == 3) { // 1% chance on every death
+				mcInstance.thePlayer.sendChatMessage("when is next " + majorList[(int) (Math.random()
+						* majorList.length)]);
+			}
+		}
+
+		// logging chat messages
 		if (curChatRaw.split(":").length <= 1) {
 			return;
 		}
@@ -335,9 +356,16 @@ public class GrindBot {
 
 			// main things
 
+			if (mcInstance.thePlayer.posY < curSpawnLevel - 4 && botInPit) {
+				double[] curTargetPos = getTargetPos();
+				mouseTargetX = curTargetPos[0];
+				mouseTargetY = curTargetPos[1] + 1;
+				mouseTargetZ = curTargetPos[2];
+			}
+
 			long timeSinceReceivedApiResponse = System.currentTimeMillis() - lastReceivedApiResponse;
 
-			if (timeSinceReceivedApiResponse > 2000) {
+			if (timeSinceReceivedApiResponse > 4000) {
 				if (mcInstance.thePlayer.posY > curSpawnLevel - 5)
 					allKeysUp();
 
@@ -354,52 +382,30 @@ public class GrindBot {
 				return;
 			}
 
-			if (!curTargetName.equals("null")) {
-				double[] curTargetPos = getPlayerPos(curTargetName);
+			/*
+			 * if (!curTargetName.equals("null")) {
+			 * double[] curTargetPos = getPlayerPos(curTargetName);
+			 * 
+			 * if (curTargetPos[1] > mcInstance.thePlayer.posY + 4 && nextTargetNames.length
+			 * > 0) {
+			 * System.out.println("switching to next target " + nextTargetNames[0] +
+			 * " because Y of "
+			 * + curTargetPos[1] + " too high");
+			 * 
+			 * curTargetName = nextTargetNames[0];
+			 * nextTargetNames = Arrays.copyOfRange(nextTargetNames, 1,
+			 * nextTargetNames.length);
+			 * 
+			 * curTargetPos = getPlayerPos(curTargetName);
+			 * }
+			 * 
+			 * mouseTargetX = curTargetPos[0];
+			 * mouseTargetY = curTargetPos[1] + 1;
+			 * mouseTargetZ = curTargetPos[2];
+			 * }
+			 */
 
-				if (curTargetPos[1] > mcInstance.thePlayer.posY + 4 && nextTargetNames.length > 0) {
-					System.out.println("switching to next target " + nextTargetNames[0] +
-							" because Y of "
-							+ curTargetPos[1] + " too high");
-
-					curTargetName = nextTargetNames[0];
-					nextTargetNames = Arrays.copyOfRange(nextTargetNames, 1,
-							nextTargetNames.length);
-
-					curTargetPos = getPlayerPos(curTargetName);
-				}
-
-				mouseTargetX = curTargetPos[0];
-				mouseTargetY = curTargetPos[1] + 1;
-				mouseTargetZ = curTargetPos[2];
-			}
-
-			if (mcInstance.thePlayer.posY < curSpawnLevel - 4 && botInPit) {
-				List<EntityPlayer> playerList = mcInstance.theWorld.playerEntities;
-				playerList = playerList
-						.stream()
-						.filter(player -> !player.isInvisible())
-						.filter(player -> !player.getName().equals(mcInstance.thePlayer.getName()))
-						.collect(Collectors.toList());
-
-				mouseTargetX = 0;
-				mouseTargetY = mcInstance.thePlayer.posY + 1;
-				mouseTargetZ = 0;
-
-				for (int i = 0; i < playerList.size() - 1; i++) {
-					String playerName = playerList.get(i).getName();
-					double[] curTargetPos = getPlayerPos(playerName);
-
-					if (Math.abs(curTargetPos[0] - mcInstance.thePlayer.posX) <= 3.5 &&
-							Math.abs(curTargetPos[1] - mcInstance.thePlayer.posY) < 3 &&
-							Math.abs(curTargetPos[2] - mcInstance.thePlayer.posZ) <= 3.5) {
-						mouseTargetX = curTargetPos[0];
-						mouseTargetY = curTargetPos[1] + 1;
-						mouseTargetZ = curTargetPos[2];
-						break;
-					}
-				}
-			}
+			// get a target if below spawn
 
 			if (mcInstance.currentScreen == null) {
 				if (mouseTargetX != 0 || mouseTargetY != 0 || mouseTargetZ != 0) { // dumb null check
@@ -1117,6 +1123,78 @@ public class GrindBot {
 			}
 		}
 	}
+
+	public double[] getTargetPos() {
+		List<EntityPlayer> playerList = mcInstance.theWorld.playerEntities;
+		playerList = playerList
+				.stream()
+				.filter(player -> !player.isInvisible())
+				.filter(player -> !player.getName().equals(mcInstance.thePlayer.getName()))
+				.collect(Collectors.toList());
+
+		double[] out = new double[] { 0, mcInstance.thePlayer.posY, 0 };
+
+		for (int i = 0; i < playerList.size() - 1; i++) {
+			String playerName = playerList.get(i).getName();
+			double[] curTargetPos = getPlayerPos(playerName);
+
+			if (Math.abs(curTargetPos[0] - mcInstance.thePlayer.posX) <= 3.5 &&
+					Math.abs(curTargetPos[1] - mcInstance.thePlayer.posY) < 3 &&
+					Math.abs(curTargetPos[2] - mcInstance.thePlayer.posZ) <= 3.5) {
+				out[0] = curTargetPos[0];
+				out[1] = curTargetPos[1];
+				out[2] = curTargetPos[2];
+				return out;
+			}
+		}
+		// If the lobby is dead and no target was found, and bots not afking swap
+		if (playerList.size() <= 20 && (mcInstance.currentScreen == null))
+			mcInstance.thePlayer.sendChatMessage("/play pit");
+		return out; // Returns 0, 0
+	}
+
+	/*
+	 * replace with this
+	 * // Returns the name of the current player to target
+	 * public double[] getTargetPos() {
+	 * List<EntityPlayer> playerList = mcInstance.theWorld.playerEntities;
+	 * playerList = playerList
+	 * .stream()
+	 * .filter(player -> !player.isInvisible())
+	 * .filter(player -> !player.getName().equals(mcInstance.thePlayer.getName()))
+	 * .collect(Collectors.toList());
+	 * 
+	 * float healthMin = 30;
+	 * EntityPlayer tempPlayer = null;
+	 * 
+	 * for (int i = 0; i < playerList.size() - 1; i++) {
+	 * EntityPlayer currentPlayer = playerList.get(i);
+	 * String playerName = currentPlayer.getName();
+	 * float playerHealth = currentPlayer.getHealth();
+	 * 
+	 * double[] curTargetPos = getPlayerPos(playerName);
+	 * 
+	 * if (Math.abs(curTargetPos[0] - mcInstance.thePlayer.posX) <= 3.5 &&
+	 * Math.abs(curTargetPos[1] - mcInstance.thePlayer.posY) < 3 &&
+	 * Math.abs(curTargetPos[2] - mcInstance.thePlayer.posZ) <= 3.5) {
+	 * 
+	 * if (playerHealth <= 6) { // Instant target if target is below 6hp (3 hearts)
+	 * return getPlayerPos(playerList.get(i).getName());
+	 * } else if (playerHealth < healthMin) {
+	 * tempPlayer = playerList.get(i);
+	 * healthMin = playerHealth;
+	 * }
+	 * }
+	 * }
+	 * // If there was no one below 6hp in range, returns the player w lowest hp
+	 * after
+	 * // iterating the whole list
+	 * if (tempPlayer != null)
+	 * return getPlayerPos(tempPlayer.getName());
+	 * 
+	 * return new double[] { 0, mcInstance.thePlayer.posY + 1, 0 };
+	 * }
+	 */
 
 	public double timeSinWave(double div) { // little odd
 		double num = System.currentTimeMillis() / div * 100.0D;

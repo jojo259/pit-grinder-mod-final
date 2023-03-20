@@ -302,7 +302,7 @@ public class GrindBot
 			// go afk if fps too low (usually when world is loading)
 
 			if (curFps < minimumFps) {
-				keysUpAndOpenInventory();
+				goAfk();
 				apiMessage = "fps too low";
 				return;
 			}
@@ -315,7 +315,7 @@ public class GrindBot
 				allKeysUp();
 
 				if (Math.floor(timeSinceReceivedApiResponse / 50) % 20 == 0) {
-					pressInventoryKeyIfNoGuiOpen();
+					goAfk();
 					apiMessage = "too long since successful api response: " + timeSinceReceivedApiResponse + "ms. last api ping: " + apiLastPing + "ms. last api time: " + apiLastTotalProcessingTime + " ms.";
 					System.out.println("too long since successful api response: " + timeSinceReceivedApiResponse + "ms. last api ping: " + apiLastPing + "ms. last api time: " + apiLastTotalProcessingTime + " ms.");
 				}
@@ -696,7 +696,7 @@ public class GrindBot
 		if (!apiText.contains("##!##")) {
 			makeLog("api response error");
 			apiMessage = "api response failure - " + apiText.substring(0, Math.min(apiText.length(), 64));
-			keysUpAndOpenInventory();
+			goAfk();
 			return;
 		}
 		
@@ -912,14 +912,20 @@ public class GrindBot
 		attackedThisTick = true;
 	}
 
-	public void keysUpAndOpenInventory() {
+	public void goAfk() {
 		allKeysUp();
-		pressInventoryKeyIfNoGuiOpen();
+		pressChatKeyIfNoGuiOpen();
 	}
 
 	public void pressInventoryKeyIfNoGuiOpen() {
 		if (mcInstance.currentScreen == null) {
 			KeyBinding.onTick(mcInstance.gameSettings.keyBindInventory.getKeyCode());
+		}
+	}
+
+	public void pressChatKeyIfNoGuiOpen() {
+		if (mcInstance.currentScreen == null) {
+			KeyBinding.onTick(mcInstance.gameSettings.keyBindChat.getKeyCode());
 		}
 	}
 	

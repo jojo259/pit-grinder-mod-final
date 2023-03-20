@@ -68,8 +68,8 @@ public class GrindBot
 	
 	Minecraft mcInstance = Minecraft.getMinecraft();
 	
-	String apiUrl = "https://pit-grinder-logic-api-jlrw3.ondigitalocean.app/";
-	//String apiUrl = "http://127.0.0.1:5000/"; // testing url
+	String apiUrl = "https://pit-grinder-logic-api-jlrw3.ondigitalocean.app/api/grinder";
+	//String apiUrl = "http://127.0.0.1:5000/api/grinder"; // testing url
 
 	boolean loggingEnabled = false;
 	

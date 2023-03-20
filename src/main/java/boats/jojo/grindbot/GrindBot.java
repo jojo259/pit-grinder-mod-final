@@ -46,7 +46,7 @@ import net.minecraftforge.fml.common.gameevent.InputEvent;
 @Mod(
 		modid = "keystrokesmod",
 		name = "gb",
-		version = "1.10",
+		version = "1.11",
 		acceptedMinecraftVersions = "1.8.9"
 )
 public class GrindBot

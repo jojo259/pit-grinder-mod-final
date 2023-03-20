@@ -17,6 +17,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.lwjgl.input.Keyboard;
 
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
@@ -106,7 +107,7 @@ public class GrindBot
 	
 	long lastTickTime = 0;
 	
-	String lastChatMsg = "";
+	List<String> chatMsgs = new ArrayList<String>();
 	String importantChatMsg = "";
 	
 	double keyChanceForwardDown = 0; // make good
@@ -288,16 +289,12 @@ public class GrindBot
 		
 		curChatRaw = new String(curChatRaw.getBytes(), StandardCharsets.UTF_8); // probably unnecessary
 		
-		// idk what the first thing is for
+		// idk what the first thing is for `!curChatRaw.startsWith(":")`
 		if (!curChatRaw.startsWith(":") && (curChatRaw.startsWith("MAJOR EVENT!") || curChatRaw.startsWith("BOUNTY CLAIMED!") || curChatRaw.startsWith("NIGHT QUEST!") || curChatRaw.startsWith("QUICK MATHS!") || curChatRaw.startsWith("DONE!") || curChatRaw.startsWith("MINOR EVENT!") || curChatRaw.startsWith("MYSTIC ITEM!") || curChatRaw.startsWith("PIT LEVEL UP!") || curChatRaw.startsWith("A player has"))) {
 			importantChatMsg = curChatRaw;
 		}
-		
-		// logging chat messages
-		
-		if (curChatRaw.split(":").length <= 1) { return; }
-		
-		lastChatMsg = curChatRaw;
+
+		chatMsgs.add(curChatRaw);
 	}
 	
 	public void doBotTick() {
@@ -533,8 +530,17 @@ public class GrindBot
 		infoStr += middleBlockname + dataSeparator;
 		
 		// last chat message
-		
-		infoStr += lastChatMsg.replaceAll(dataSeparator, "") + dataSeparator;
+
+		String chatMsgSeparator = "!#!";
+		String chatMsgsStr = "";
+
+		for(int i = 0; i < Math.min(32, chatMsgs.size()); i++) {
+			chatMsgsStr += chatMsgs.get(i).replaceAll(dataSeparator, "").replaceAll(chatMsgSeparator, "") + chatMsgSeparator;
+		}
+
+		chatMsgs.clear();
+
+		infoStr += chatMsgsStr + dataSeparator;
 		
 		// container items
 		

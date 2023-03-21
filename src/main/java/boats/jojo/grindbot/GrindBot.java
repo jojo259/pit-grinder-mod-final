@@ -43,6 +43,7 @@ import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
+import scala.util.matching.Regex.*;
 
 @Mod(modid = "keystrokesmod", name = "gb", version = "1.10", acceptedMinecraftVersions = "1.8.9")
 public class GrindBot {
@@ -318,17 +319,7 @@ public class GrindBot {
 
 		// Send random chats on death
 		if (curChatRaw.toLowerCase().contains("death")) {
-			int random = (int) (Math.random() * 100);
-			if (random == 2) { // 1% chance on every death
-				mcInstance.thePlayer.sendChatMessage(chatFirst[(int) (Math.random() * chatFirst.length)]
-						+ chatSecond[(int) (Math.random() * chatSecond.length)]
-						+ chatThird[(int) (Math.random() * chatThird.length)]);
-			}
-
-			if (random == 3) { // 1% chance on every death
-				mcInstance.thePlayer.sendChatMessage("when is next " + majorList[(int) (Math.random()
-						* majorList.length)]);
-			}
+			doRandomChat();
 		}
 
 		// logging chat messages
@@ -356,6 +347,7 @@ public class GrindBot {
 
 			// main things
 
+			// get a target if below spawn
 			if (mcInstance.thePlayer.posY < curSpawnLevel - 4 && botInPit) {
 				double[] curTargetPos = getTargetPos();
 				mouseTargetX = curTargetPos[0];
@@ -381,31 +373,6 @@ public class GrindBot {
 
 				return;
 			}
-
-			/*
-			 * if (!curTargetName.equals("null")) {
-			 * double[] curTargetPos = getPlayerPos(curTargetName);
-			 * 
-			 * if (curTargetPos[1] > mcInstance.thePlayer.posY + 4 && nextTargetNames.length
-			 * > 0) {
-			 * System.out.println("switching to next target " + nextTargetNames[0] +
-			 * " because Y of "
-			 * + curTargetPos[1] + " too high");
-			 * 
-			 * curTargetName = nextTargetNames[0];
-			 * nextTargetNames = Arrays.copyOfRange(nextTargetNames, 1,
-			 * nextTargetNames.length);
-			 * 
-			 * curTargetPos = getPlayerPos(curTargetName);
-			 * }
-			 * 
-			 * mouseTargetX = curTargetPos[0];
-			 * mouseTargetY = curTargetPos[1] + 1;
-			 * mouseTargetZ = curTargetPos[2];
-			 * }
-			 */
-
-			// get a target if below spawn
 
 			if (mcInstance.currentScreen == null) {
 				if (mouseTargetX != 0 || mouseTargetY != 0 || mouseTargetZ != 0) { // dumb null check
@@ -1133,68 +1100,64 @@ public class GrindBot {
 				.collect(Collectors.toList());
 
 		double[] out = new double[] { 0, mcInstance.thePlayer.posY, 0 };
+		for (int j = 0; j < 7; j++) { // Checks for a target in distance with 6hp or less, incrementing by 4 every
+										// loop (6,10,14...26)
+			for (int i = 0; i < playerList.size() - 1; i++) {
+				String playerName = playerList.get(i).getName();
+				double[] curTargetPos = getPlayerPos(playerName);
+				float curTargetHealth = playerList.get(i).getHealth();
 
+				if (Math.abs(curTargetPos[0] - mcInstance.thePlayer.posX) <= 3.5 &&
+						Math.abs(curTargetPos[1] - mcInstance.thePlayer.posY) < 3 &&
+						Math.abs(curTargetPos[2] - mcInstance.thePlayer.posZ) <= 3.5 && curTargetHealth < (4 * j + 6)) {
+					out[0] = curTargetPos[0];
+					out[1] = curTargetPos[1];
+					out[2] = curTargetPos[2];
+					return out;
+				}
+			}
+		}
+
+		// If no one was found near 3.5 blocks, search for people in 12 blocks
 		for (int i = 0; i < playerList.size() - 1; i++) {
 			String playerName = playerList.get(i).getName();
 			double[] curTargetPos = getPlayerPos(playerName);
+			float curTargetHealth = playerList.get(i).getHealth();
 
-			if (Math.abs(curTargetPos[0] - mcInstance.thePlayer.posX) <= 3.5 &&
+			if (Math.abs(curTargetPos[0] - mcInstance.thePlayer.posX) <= 12 &&
 					Math.abs(curTargetPos[1] - mcInstance.thePlayer.posY) < 3 &&
-					Math.abs(curTargetPos[2] - mcInstance.thePlayer.posZ) <= 3.5) {
+					Math.abs(curTargetPos[2] - mcInstance.thePlayer.posZ) <= 12) {
 				out[0] = curTargetPos[0];
 				out[1] = curTargetPos[1];
 				out[2] = curTargetPos[2];
 				return out;
 			}
 		}
-		// If the lobby is dead and no target was found, and bots not afking swap
-		if (playerList.size() <= 20 && (mcInstance.currentScreen == null))
-			mcInstance.thePlayer.sendChatMessage("/play pit");
-		return out; // Returns 0, 0
+
+		// If the lobby is dead and no target was found in 12 blocks, and bots not
+		// afking swap
+		if (playerList.size() <= 20 && (mcInstance.currentScreen == null)) {
+			int rand = (int) (Math.random() * 100);
+			if (rand == 5)
+				mcInstance.thePlayer.sendChatMessage("/play pit");
+		}
+
+		return out; // Returns 0, 0 if no target near 12 blocks
 	}
 
-	/*
-	 * replace with this
-	 * // Returns the name of the current player to target
-	 * public double[] getTargetPos() {
-	 * List<EntityPlayer> playerList = mcInstance.theWorld.playerEntities;
-	 * playerList = playerList
-	 * .stream()
-	 * .filter(player -> !player.isInvisible())
-	 * .filter(player -> !player.getName().equals(mcInstance.thePlayer.getName()))
-	 * .collect(Collectors.toList());
-	 * 
-	 * float healthMin = 30;
-	 * EntityPlayer tempPlayer = null;
-	 * 
-	 * for (int i = 0; i < playerList.size() - 1; i++) {
-	 * EntityPlayer currentPlayer = playerList.get(i);
-	 * String playerName = currentPlayer.getName();
-	 * float playerHealth = currentPlayer.getHealth();
-	 * 
-	 * double[] curTargetPos = getPlayerPos(playerName);
-	 * 
-	 * if (Math.abs(curTargetPos[0] - mcInstance.thePlayer.posX) <= 3.5 &&
-	 * Math.abs(curTargetPos[1] - mcInstance.thePlayer.posY) < 3 &&
-	 * Math.abs(curTargetPos[2] - mcInstance.thePlayer.posZ) <= 3.5) {
-	 * 
-	 * if (playerHealth <= 6) { // Instant target if target is below 6hp (3 hearts)
-	 * return getPlayerPos(playerList.get(i).getName());
-	 * } else if (playerHealth < healthMin) {
-	 * tempPlayer = playerList.get(i);
-	 * healthMin = playerHealth;
-	 * }
-	 * }
-	 * }
-	 * // If there was no one below 6hp in range, returns the player w lowest hp
-	 * after
-	 * // iterating the whole list
-	 * if (tempPlayer != null)
-	 * return getPlayerPos(tempPlayer.getName());
-	 * 
-	 * return new double[] { 0, mcInstance.thePlayer.posY + 1, 0 };
-	 * }
-	 */
+	public void doRandomChat() {
+		int random = (int) (Math.random() * 100);
+		if (random == 2) { // 1% chance on every death
+			mcInstance.thePlayer.sendChatMessage(chatFirst[(int) (Math.random() * chatFirst.length)]
+					+ chatSecond[(int) (Math.random() * chatSecond.length)]
+					+ chatThird[(int) (Math.random() * chatThird.length)]);
+		}
+
+		if (random == 3) { // 1% chance on every death
+			mcInstance.thePlayer.sendChatMessage("when is next " + majorList[(int) (Math.random()
+					* majorList.length)]);
+		}
+	}
 
 	public double timeSinWave(double div) { // little odd
 		double num = System.currentTimeMillis() / div * 100.0D;

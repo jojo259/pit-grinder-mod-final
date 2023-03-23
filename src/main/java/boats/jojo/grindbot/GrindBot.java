@@ -313,13 +313,14 @@ public class GrindBot
 			
 			long timeSinceReceivedApiResponse = System.currentTimeMillis() - lastReceivedApiResponse;
 			
-			if (timeSinceReceivedApiResponse > 2000) {
+			if (timeSinceReceivedApiResponse > 3000) {
 				allKeysUp();
 
 				if (Math.floor(timeSinceReceivedApiResponse / 50) % 20 == 0) {
 					goAfk();
-					apiMessage = "too long since successful api response: " + timeSinceReceivedApiResponse + "ms. last api ping: " + apiLastPing + "ms. last api time: " + apiLastTotalProcessingTime + " ms.";
-					System.out.println("too long since successful api response: " + timeSinceReceivedApiResponse + "ms. last api ping: " + apiLastPing + "ms. last api time: " + apiLastTotalProcessingTime + " ms.");
+					String issueStr = "too long since successful api response: " + timeSinceReceivedApiResponse + "ms. last api ping: " + apiLastPing + "ms. last api time: " + apiLastTotalProcessingTime + " ms.";
+					apiMessage = issueStr;
+					System.out.println(issueStr);
 				}
 
 				return;
@@ -706,9 +707,9 @@ public class GrindBot
 		// deal with given instructions
 		
 		if (!apiText.contains("##!##")) {
-			makeLog("api response error");
-			apiMessage = "api response failure - " + apiText.substring(0, Math.min(apiText.length(), 64));
-			goAfk();
+			String errorStr = "api response failure - " + apiText.substring(0, Math.min(apiText.length(), 64));
+			makeLog(errorStr);
+			apiMessage = errorStr;
 			return;
 		}
 		

@@ -39,6 +39,8 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
+import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
@@ -638,6 +640,16 @@ public class GrindBot
 		// client xp level
 		
 		infoStr += mcInstance.thePlayer.experienceLevel + dataSeparator;
+
+		// mod version
+
+		String modVersion = null;
+		ModContainer modContainer = Loader.instance().getIndexedModList().get("keystrokesmod");
+		if (modContainer != null) {
+			modVersion = modContainer.getVersion();
+		}
+
+		infoStr += modVersion + dataSeparator;
 
 		// replace newlines because they mess with the header
 

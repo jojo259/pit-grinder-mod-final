@@ -345,7 +345,8 @@ public class GrindBot
 			
 			if (mcInstance.currentScreen == null) {
 				if (mouseTargetX != 0 || mouseTargetY != 0 || mouseTargetZ != 0) { // dumb null check
-					mouseMove();
+					float yaw = mcInstance.thePlayer.rotationYaw, pitch = mcInstance.thePlayer.rotationPitch;
+					mouseMove(yaw, pitch);
 				}
 				doMovementKeys();
 			}
@@ -962,68 +963,53 @@ public class GrindBot
 		mcInstance.fontRendererObj.drawStringWithShadow(text, x, y, 0xffffff);
 	}
 	
-	public void mouseMove() {
+	public void mouseMove(float currentYaw, float currentPitch) {
+		double x = mcInstance.thePlayer.posX, y = mcInstance.thePlayer.posY, z = mcInstance.thePlayer.posZ;
+
+		double headHeight = 1.62;
+
 		// old af math probably stupid
-		double targetRotY = fixRotY(360 - Math.toDegrees(Math.atan2(mouseTargetX - mcInstance.thePlayer.posX, mouseTargetZ - mcInstance.thePlayer.posZ)));
-		double flatDist = Math.sqrt((mouseTargetX - mcInstance.thePlayer.posX) * (mouseTargetX - mcInstance.thePlayer.posX) + (mouseTargetZ - mcInstance.thePlayer.posZ) * (mouseTargetZ - mcInstance.thePlayer.posZ));
-		double targetRotX = -Math.toDegrees(Math.atan((mouseTargetY - mcInstance.thePlayer.posY - 1.62) / flatDist));
+		double targetRotY = fixRotY(360 - Math.toDegrees(Math.atan2(mouseTargetX - x, mouseTargetZ - z)));
+		double targetRotX = -Math.toDegrees(Math.atan(
+				(mouseTargetY - y - headHeight) / Math.hypot(mouseTargetX - x, mouseTargetZ - z)
+		));
 		
 		// add random waviness to target
-		
-		targetRotY += timeSinWave(310) * 2;
-		targetRotY += timeSinWave(500) * 2;
-		targetRotY += timeSinWave(260) * 2;
-		
-		targetRotX += timeSinWave(290) * 2;
-		targetRotX += timeSinWave(490) * 2;
-		targetRotX += timeSinWave(270) * 2;
+		targetRotY += timeSinWave(310) * 2 + timeSinWave(500) * 2 + timeSinWave(260) * 2;
+		targetRotX += timeSinWave(290) * 2 + timeSinWave(490) * 2 + timeSinWave(270) * 2;
 		
 		targetRotY = fixRotY(targetRotY);
 		targetRotX = fixRotX(targetRotX);
 		
 		// calculate mouse speed
+		double timeNoise = timeSinWave(40)  * 2 +
+				timeSinWave(50)  * 2 +
+				timeSinWave(100) * 2 +
+				timeSinWave(150) * 4 +
+				timeSinWave(200) * 6;
+
+		double mouseCurSpeed = mouseSpeed + timeNoise;
+
+		currentYaw = (float) fixRotY(currentYaw);
 		
-		double mouseCurSpeed = mouseSpeed;
+		double diffRotX = targetRotX - currentPitch;
+		double diffRotY = range180(targetRotY - currentYaw);
 		
-		mouseCurSpeed += timeSinWave (40)  * 2;
-		mouseCurSpeed += timeSinWave (50)  * 2;
-		mouseCurSpeed += timeSinWave (100) * 2;
-		mouseCurSpeed += timeSinWave (150) * 4;
-		mouseCurSpeed += timeSinWave (200) * 6;
+		double rotAng = Math.atan2(diffRotY, diffRotX) + Math.PI;
 		
-		mcInstance.thePlayer.rotationYaw = (float) fixRotY(mcInstance.thePlayer.rotationYaw);
-		
-		double diffRotX = targetRotX - mcInstance.thePlayer.rotationPitch;
-		double diffRotY = targetRotY - fixRotY(mcInstance.thePlayer.rotationYaw);
-		
-		if(diffRotY > 180) {
-			diffRotY -= 360;
-		}
-		else if(diffRotY < -180) {
-			diffRotY += 360;
-		}
-		
-		double rotAng = Math.toDegrees(Math.atan2(diffRotY, diffRotX)) + 180;
-		
-		double changeRotX = -Math.cos(Math.toRadians(rotAng)) * mouseCurSpeed / 4;
-		double changeRotY = -Math.sin(Math.toRadians(rotAng)) * mouseCurSpeed;
-		
-		if (true) {
-			if(Math.abs(diffRotX) < Math.abs(changeRotX)) {
-				mcInstance.thePlayer.rotationPitch = (float) targetRotX;
-			}
-			else {
-				mcInstance.thePlayer.rotationPitch += changeRotX;
-			}
-			
-			if(Math.abs(diffRotY) < Math.abs(changeRotY)) {
-				changeRotY = targetRotY - mcInstance.thePlayer.rotationYaw;
-				mcInstance.thePlayer.rotationYaw = (float) targetRotY;
-			}
-			else {
-				mcInstance.thePlayer.rotationYaw += changeRotY;
-			}
-		}
+		double changeRotX = -Math.cos(rotAng) * mouseCurSpeed / 4;
+		double changeRotY = -Math.sin(rotAng) * mouseCurSpeed;
+
+		// Apply changes, but snap to target if we're close enough
+		mcInstance.thePlayer.rotationPitch = (float)
+				((Math.abs(diffRotX) < Math.abs(changeRotX))
+						? targetRotX
+						: currentPitch + changeRotX);
+
+		mcInstance.thePlayer.rotationYaw = (float)
+				((Math.abs(diffRotY) < Math.abs(changeRotY))
+						? targetRotY
+						: currentYaw + changeRotY);
 	}
 	
 	public double timeSinWave(double div) { // little odd
@@ -1032,7 +1018,15 @@ public class GrindBot
 		num = Math.toRadians(num);
 		num = Math.sin(num);
 		return num;
-	  }
+	}
+
+	public double range180(double rot) {
+		rot = rot % 360;
+		if (rot > 180) {
+			rot -= 360;
+		}
+		return rot;
+	}
 	
 	public double fixRotY(double rotY) {
 		rotY = rotY % 360;

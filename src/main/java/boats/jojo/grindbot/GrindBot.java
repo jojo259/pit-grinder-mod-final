@@ -350,8 +350,7 @@ public class GrindBot
 			
 			if (mcInstance.currentScreen == null) {
 				if (mouseTargetX != 0 || mouseTargetY != 0 || mouseTargetZ != 0) { // dumb null check
-					float yaw = mcInstance.thePlayer.rotationYaw, pitch = mcInstance.thePlayer.rotationPitch;
-					mouseMove(yaw, pitch);
+					mouseMove();
 				}
 				doMovementKeys();
 			}
@@ -1002,9 +1001,10 @@ public class GrindBot
 		lastMouseUpdate = currentTime;
 	}
 
-	public void mouseMove(float currentYaw, float currentPitch) {
+	public void mouseMove() {
 		interpolateMousePosition();
 
+		float currentYaw = mcInstance.thePlayer.rotationYaw, currentPitch = mcInstance.thePlayer.rotationPitch;
 		double x = mcInstance.thePlayer.posX, y = mcInstance.thePlayer.posY, z = mcInstance.thePlayer.posZ;
 
 		double headHeight = 1.62;

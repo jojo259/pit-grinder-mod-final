@@ -17,6 +17,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.lwjgl.input.Keyboard;
 
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
@@ -38,6 +39,8 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
+import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
@@ -45,7 +48,7 @@ import net.minecraftforge.fml.common.gameevent.InputEvent;
 @Mod(
 		modid = "keystrokesmod",
 		name = "gb",
-		version = "1.10",
+		version = "1.11",
 		acceptedMinecraftVersions = "1.8.9"
 )
 public class GrindBot
@@ -67,8 +70,8 @@ public class GrindBot
 	
 	Minecraft mcInstance = Minecraft.getMinecraft();
 	
-	String apiUrl = "https://pit-grinder-logic-api-jlrw3.ondigitalocean.app/";
-	//String apiUrl = "http://127.0.0.1:5000/"; // testing url
+	String apiUrl = "https://pit-grinder-logic-api-jlrw3.ondigitalocean.app/api/grinder";
+	//String apiUrl = "http://127.0.0.1:5000/api/grinder"; // testing url
 
 	boolean loggingEnabled = false;
 	
@@ -106,7 +109,7 @@ public class GrindBot
 	
 	long lastTickTime = 0;
 	
-	String lastChatMsg = "";
+	List<String> chatMsgs = new ArrayList<String>();
 	String importantChatMsg = "";
 	
 	double keyChanceForwardDown = 0; // make good
@@ -293,16 +296,12 @@ public class GrindBot
 		
 		curChatRaw = new String(curChatRaw.getBytes(), StandardCharsets.UTF_8); // probably unnecessary
 		
-		// idk what the first thing is for
+		// idk what the first thing is for `!curChatRaw.startsWith(":")`
 		if (!curChatRaw.startsWith(":") && (curChatRaw.startsWith("MAJOR EVENT!") || curChatRaw.startsWith("BOUNTY CLAIMED!") || curChatRaw.startsWith("NIGHT QUEST!") || curChatRaw.startsWith("QUICK MATHS!") || curChatRaw.startsWith("DONE!") || curChatRaw.startsWith("MINOR EVENT!") || curChatRaw.startsWith("MYSTIC ITEM!") || curChatRaw.startsWith("PIT LEVEL UP!") || curChatRaw.startsWith("A player has"))) {
 			importantChatMsg = curChatRaw;
 		}
-		
-		// logging chat messages
-		
-		if (curChatRaw.split(":").length <= 1) { return; }
-		
-		lastChatMsg = curChatRaw;
+
+		chatMsgs.add(curChatRaw);
 	}
 	
 	public void doBotTick() {
@@ -310,7 +309,7 @@ public class GrindBot
 			// go afk if fps too low (usually when world is loading)
 
 			if (curFps < minimumFps) {
-				keysUpAndOpenInventory();
+				goAfk();
 				apiMessage = "fps too low";
 				return;
 			}
@@ -319,13 +318,14 @@ public class GrindBot
 			
 			long timeSinceReceivedApiResponse = System.currentTimeMillis() - lastReceivedApiResponse;
 			
-			if (timeSinceReceivedApiResponse > 2000) {
+			if (timeSinceReceivedApiResponse > 3000) {
 				allKeysUp();
 
 				if (Math.floor(timeSinceReceivedApiResponse / 50) % 20 == 0) {
-					pressInventoryKeyIfNoGuiOpen();
-					apiMessage = "too long since successful api response: " + timeSinceReceivedApiResponse + "ms. last api ping: " + apiLastPing + "ms. last api time: " + apiLastTotalProcessingTime + " ms.";
-					System.out.println("too long since successful api response: " + timeSinceReceivedApiResponse + "ms. last api ping: " + apiLastPing + "ms. last api time: " + apiLastTotalProcessingTime + " ms.");
+					goAfk();
+					String issueStr = "too long since successful api response: " + timeSinceReceivedApiResponse + "ms. last api ping: " + apiLastPing + "ms. last api time: " + apiLastTotalProcessingTime + " ms.";
+					apiMessage = issueStr;
+					System.out.println(issueStr);
 				}
 
 				return;
@@ -539,8 +539,17 @@ public class GrindBot
 		infoStr += middleBlockname + dataSeparator;
 		
 		// last chat message
-		
-		infoStr += lastChatMsg.replaceAll(dataSeparator, "") + dataSeparator;
+
+		String chatMsgSeparator = "!#!";
+		String chatMsgsStr = "";
+
+		for(int i = 0; i < Math.min(32, chatMsgs.size()); i++) {
+			chatMsgsStr += chatMsgs.get(i).replaceAll(dataSeparator, "").replaceAll(chatMsgSeparator, "") + chatMsgSeparator;
+		}
+
+		chatMsgs.clear();
+
+		infoStr += chatMsgsStr + dataSeparator;
 		
 		// container items
 		
@@ -639,6 +648,16 @@ public class GrindBot
 		
 		infoStr += mcInstance.thePlayer.experienceLevel + dataSeparator;
 
+		// mod version
+
+		String modVersion = null;
+		ModContainer modContainer = Loader.instance().getIndexedModList().get("keystrokesmod");
+		if (modContainer != null) {
+			modVersion = modContainer.getVersion();
+		}
+
+		infoStr += modVersion + dataSeparator;
+
 		// replace newlines because they mess with the header
 
 		infoStr = infoStr.replaceAll("\n", " ");
@@ -694,9 +713,9 @@ public class GrindBot
 		// deal with given instructions
 		
 		if (!apiText.contains("##!##")) {
-			makeLog("api response error");
-			apiMessage = "api response failure - " + apiText.substring(0, Math.min(apiText.length(), 64));
-			keysUpAndOpenInventory();
+			String errorStr = "api response failure - " + apiText.substring(0, Math.min(apiText.length(), 64));
+			makeLog(errorStr);
+			apiMessage = errorStr;
 			return;
 		}
 		
@@ -912,14 +931,20 @@ public class GrindBot
 		attackedThisTick = true;
 	}
 
-	public void keysUpAndOpenInventory() {
+	public void goAfk() {
 		allKeysUp();
-		pressInventoryKeyIfNoGuiOpen();
+		pressChatKeyIfNoGuiOpen();
 	}
 
 	public void pressInventoryKeyIfNoGuiOpen() {
 		if (mcInstance.currentScreen == null) {
 			KeyBinding.onTick(mcInstance.gameSettings.keyBindInventory.getKeyCode());
+		}
+	}
+
+	public void pressChatKeyIfNoGuiOpen() {
+		if (mcInstance.currentScreen == null) {
+			KeyBinding.onTick(mcInstance.gameSettings.keyBindChat.getKeyCode());
 		}
 	}
 	

@@ -1,44 +1,30 @@
-# pit-grinder-mod-final
+# Jojo Grinder
 
-Grinds pit, uses an API for instructions
+Grinds Hypixel Pit; uses an API for instructions
 
 Requires an authorization key
 
-### Usage:
+### Usage
 
 - Use /setkey \<key\> to set your authorization key
 - Press J to toggle bot
-- Press K to toggle built-in autoclicker (do not use if using external killaura or autoclicker)
+- Press K to toggle built-in autoclicker (do not use if using external KillAura or autoclicker)
 - Press F3 + P once to disable pausing when minecraft is not in focus
 - Your Hypixel language must be set to English
 
-### Vape/other settings:
+### Vape/other settings
 
-- If using Vape killaura or autoclicker then don't use built-in autoclicker
-- If using Vape killaura:
+- If using Vape KillAura or autoclicker then don't use built-in autoclicker
+- If using Vape KillAura:
   - Set 'allowed items' to 'sword'
-  - Set it to disable killaura when any GUI is open
+  - Set it to disable KillAura when any GUI is open
+  - You will also need to make the KillAura attack without mouse down
 
-### List of data that is sent to the API:
+### API info
 
-- Authorization key
-- Client username
-- Client UUID
-- Client position
-- Client viewing angles
-- Client inventory
-- All visible player usernames + positions + healths + armor values
-- Middle block of spawn
-- Last player chat message
-- Container items
-- Dropped item entities
-- Important chat message (event starting, mystic drop etc.)
-- Current open GUI type
-- Villager positions
-- Client health
-- Client XP level
+The mod sends a bunch of information about your game to a web API. The API then responds with instructions on what your bot should do.
 
-If you're not ok with all of this data being sent to the API then don't run the mod
+If you would like to know exactly what is sent then you can ask in the Discord or look through the code.
 
 ### Contributing
 
@@ -47,9 +33,7 @@ If you're not ok with all of this data being sent to the API then don't run the 
 - Gradle should sync automatically and build dependencies, if not get a better IDE or run `gradlew setupDecompWorkspace`
 - If you're using eclipse you can optionally run `gradlew eclipse` to generate a .launch file to run the project
 - Make your changes
-- Run the gradle build task through your IDE or through `gradlew build`, the mod jar will be built inside `/build/libs`
-- Now you need to add all of the dependencies into the jar. We don't have a good way of doing this, but the current method is to unzip all of the jars inside "dependencyjars" into a folder using a tool like WinRAR
-- Next, open the mod jar with WinRAR and add the extracted contents of the "dependencyjars" into the mod jar
-- You should now have a valid jar, make sure to test it and run with Forge before pushing - if you're contributing and need a key to test with just ask
+- Run the gradle build task through your IDE or through `gradlew build`. The mod JAR will be built inside `/build/libs`
+- You should now have a valid JAR. Make sure to test it and run with Forge before pushing - if you're contributing then you can ask in the Discord for a working key to test with
 
-Please feel free to suggest improvements.
+Feel free to suggest improvements.

@@ -143,6 +143,9 @@ public class GrindBot
 	long preApiProcessingTime = 0;
 	
 	String apiMessage = "null";
+
+	double mouseVelX, mouseVelY;
+	long lastMouseUpdate;
 	
 	@SubscribeEvent
 	public void onKeyPress(InputEvent.KeyInputEvent event) {
@@ -182,6 +185,8 @@ public class GrindBot
 		if (event.type == ElementType.ARMOR) {
 			return;
 		}
+
+		interpolateMousePosition();
 		
 		int screenWidth = event.resolution.getScaledWidth();
 		int screenHeight = event.resolution.getScaledHeight();
@@ -962,8 +967,19 @@ public class GrindBot
 	public void drawText(String text, float x, float y, int col) {
 		mcInstance.fontRendererObj.drawStringWithShadow(text, x, y, 0xffffff);
 	}
-	
+
+	public void interpolateMousePosition() {
+		long currentTime = System.currentTimeMillis();
+		if (lastMouseUpdate != 0) {
+			mcInstance.thePlayer.rotationYaw += mouseVelY * (currentTime - lastMouseUpdate) / 1000f;
+			mcInstance.thePlayer.rotationPitch += mouseVelX * (currentTime - lastMouseUpdate) / 1000f;
+		}
+		lastMouseUpdate = currentTime;
+	}
+
 	public void mouseMove(float currentYaw, float currentPitch) {
+		interpolateMousePosition();
+
 		double x = mcInstance.thePlayer.posX, y = mcInstance.thePlayer.posY, z = mcInstance.thePlayer.posZ;
 
 		double headHeight = 1.62;
@@ -1000,16 +1016,17 @@ public class GrindBot
 		double changeRotX = -Math.cos(rotAng) * mouseCurSpeed / 4;
 		double changeRotY = -Math.sin(rotAng) * mouseCurSpeed;
 
-		// Apply changes, but snap to target if we're close enough
-		mcInstance.thePlayer.rotationPitch = (float)
-				((Math.abs(diffRotX) < Math.abs(changeRotX))
-						? targetRotX
-						: currentPitch + changeRotX);
+		mouseVelX = Math.abs(diffRotX) < Math.abs(changeRotX)
+				? targetRotX - currentPitch
+				: changeRotX;
+		mouseVelY = Math.abs(diffRotY) < Math.abs(changeRotY)
+				? targetRotY - currentYaw
+				: changeRotY;
 
-		mcInstance.thePlayer.rotationYaw = (float)
-				((Math.abs(diffRotY) < Math.abs(changeRotY))
-						? targetRotY
-						: currentYaw + changeRotY);
+		// Reach target in 1/20th of a second (1 tick)
+		double TPS = 20.0;
+		mouseVelX *= TPS;
+		mouseVelY *= TPS;
 	}
 	
 	public double timeSinWave(double div) { // little odd

@@ -189,7 +189,9 @@ public class GrindBot
 			return;
 		}
 
-		interpolateMousePosition();
+		if (grinderEnabled) {
+			interpolateMousePosition();
+		}
 		
 		int screenWidth = event.resolution.getScaledWidth();
 		int screenHeight = event.resolution.getScaledHeight();

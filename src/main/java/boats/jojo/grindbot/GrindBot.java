@@ -392,7 +392,7 @@ public class GrindBot
 					
 					apiKey = fileKey;
 					
-					System.out.println("set key: " + fileKey);
+					System.out.println("set key");
 					
 					foundKeyFile = true;
 					

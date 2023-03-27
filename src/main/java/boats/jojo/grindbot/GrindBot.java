@@ -189,9 +189,7 @@ public class GrindBot
 			return;
 		}
 
-		if (grinderEnabled) {
-			interpolateMousePosition();
-		}
+		interpolateMousePosition();
 		
 		int screenWidth = event.resolution.getScaledWidth();
 		int screenHeight = event.resolution.getScaledHeight();
@@ -995,6 +993,13 @@ public class GrindBot
 	}
 
 	public void interpolateMousePosition() {
+		if (!grinderEnabled || mcInstance.currentScreen != null) {
+			lastMouseUpdate = 0;
+			mouseVelX = 0;
+			mouseVelY = 0;
+			return;
+		}
+
 		long currentTime = System.currentTimeMillis();
 		if (lastMouseUpdate != 0) {
 			mcInstance.thePlayer.rotationYaw += mouseVelY * (currentTime - lastMouseUpdate) / 1000f;

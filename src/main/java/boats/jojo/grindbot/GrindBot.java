@@ -1002,8 +1002,17 @@ public class GrindBot
 
 		long currentTime = System.currentTimeMillis();
 		if (lastMouseUpdate != 0) {
-			mcInstance.thePlayer.rotationYaw += mouseVelY * (currentTime - lastMouseUpdate) / 1000f;
-			mcInstance.thePlayer.rotationPitch += mouseVelX * (currentTime - lastMouseUpdate) / 1000f;
+			float timePassed = (currentTime - lastMouseUpdate) / 1000f;
+
+			// Limit time passed (so that the change can't be that large)
+			timePassed = Math.min(timePassed, 1);
+
+			mcInstance.thePlayer.rotationYaw += mouseVelY * timePassed;
+			mcInstance.thePlayer.rotationPitch += mouseVelX * timePassed;
+
+			// Limit pitch
+			float pitch = mcInstance.thePlayer.rotationPitch;
+			mcInstance.thePlayer.rotationPitch = Math.min(Math.max(-90, pitch), 90);
 		}
 		lastMouseUpdate = currentTime;
 	}

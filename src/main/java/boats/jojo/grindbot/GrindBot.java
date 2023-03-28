@@ -158,6 +158,7 @@ public class GrindBot
 			
 			if (grinderEnabled) { // newly enabled
 				initialFov = mcInstance.gameSettings.fovSetting;
+				chatMsgs.clear(); // reset list of chat messages to avoid picking up ones received earlier
 			}
 			else if (!grinderEnabled) { // newly disabled
 				allKeysUp();

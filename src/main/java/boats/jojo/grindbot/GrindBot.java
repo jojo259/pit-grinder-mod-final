@@ -179,6 +179,7 @@ public class GrindBot
 	
 	@SubscribeEvent
 	public void overlayFunc(RenderGameOverlayEvent.Post event) {
+		long curTime = System.currentTimeMillis();
 		try {
 			if (event.type == ElementType.HEALTH) {
 				return;
@@ -253,8 +254,6 @@ public class GrindBot
 			curFps = Minecraft.getDebugFPS();
 						
 			// bot tick handler
-			
-			long curTime = System.currentTimeMillis();
 				
 			long tickTimeDiff = curTime - lastTickTime;
 

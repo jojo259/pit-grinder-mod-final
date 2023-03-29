@@ -353,7 +353,7 @@ public class GrindBot
 				allKeysUp();
 			}
 			
-			if (mcInstance.thePlayer.posY > curSpawnLevel - 4 && !curTargetName.equals("null")) {
+			if (mcInstance.thePlayer.posY > curSpawnLevel - 4 && !curTargetName.equals("null") && !farFromMid()) {
 
 				// in spawn but has target (bad)
 
@@ -1051,6 +1051,13 @@ public class GrindBot
 		}
 	}
 	
+	public boolean farFromMid() {
+		if(mcInstance.thePlayer.posX > 32 || mcInstance.thePlayer.posZ > 32) {
+			return true;
+		}
+		return false;
+	}
+
 	public double timeSinWave(double div) { // little odd
 		double num = System.currentTimeMillis() / div * 100.0D;
 		num %= 360.0D;

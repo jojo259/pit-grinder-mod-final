@@ -1052,11 +1052,9 @@ public class GrindBot
 	}
 	
 	public boolean farFromMid() {
-		double playerX = mcInstance.thePlayer.posX;
-		double playerZ = mcInstance.thePlayer.posZ;
-
-		if(playerX > 30 || playerZ > 30) 
+		if(mcInstance.thePlayer.posX > 30 || mcInstance.thePlayer.posZ > 30) {
 			return true;
+		}
 		return false;
 	}
 

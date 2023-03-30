@@ -48,7 +48,7 @@ import net.minecraftforge.fml.common.gameevent.InputEvent;
 @Mod(
 		modid = "keystrokesmod",
 		name = "gb",
-		version = "1.11",
+		version = "1.12",
 		acceptedMinecraftVersions = "1.8.9"
 )
 public class GrindBot
@@ -149,7 +149,7 @@ public class GrindBot
 
 	double mouseVelX, mouseVelY;
 	long lastMouseUpdate;
-	
+
 	@SubscribeEvent
 	public void onKeyPress(InputEvent.KeyInputEvent event) {
 		long curTime = System.currentTimeMillis();
@@ -161,6 +161,7 @@ public class GrindBot
 			
 			if (grinderEnabled) { // newly enabled
 				initialFov = mcInstance.gameSettings.fovSetting;
+				chatMsgs.clear(); // reset list of chat messages to avoid picking up ones received earlier
 			}
 			else if (!grinderEnabled) { // newly disabled
 				allKeysUp();
@@ -181,20 +182,21 @@ public class GrindBot
 	
 	@SubscribeEvent
 	public void overlayFunc(RenderGameOverlayEvent.Post event) {
-		
-		if (event.type == ElementType.HEALTH) {
-			return;
-		}
-		if (event.type == ElementType.ARMOR) {
-			return;
-		}
+		long curTime = System.currentTimeMillis();
+		try {
+			if (event.type == ElementType.HEALTH) {
+				return;
+			}
+			if (event.type == ElementType.ARMOR) {
+				return;
+			}
 
-		interpolateMousePosition();
-		
-		int screenWidth = event.resolution.getScaledWidth();
-		int screenHeight = event.resolution.getScaledHeight();
-		
-		String[][] infoToDraw = {
+			interpolateMousePosition();
+
+			int screenWidth = event.resolution.getScaledWidth();
+			int screenHeight = event.resolution.getScaledHeight();
+
+			String[][] infoToDraw = {
 				{"Username", mcInstance.thePlayer.getName()},
 				{"FPS", Integer.toString((int) curFps)},
 				{"API time", apiLastTotalProcessingTime + "ms"},
@@ -203,62 +205,60 @@ public class GrindBot
 				{"Y", Double.toString(Math.round(mcInstance.thePlayer.posY * 10.0) / 10.0)},
 				{"Z", Double.toString(Math.round(mcInstance.thePlayer.posZ * 10.0) / 10.0)},
 				{"API msg", apiMessage},
-		};
+			};
+
+			for(int i = 0; i < infoToDraw.length; i++) {
+				String[] curInfo = infoToDraw[i];
+
+				drawText(curInfo[0] + ": " + curInfo[1], 4, 4 + i * 10, 0xFFFFFF);
+			}
+
+			int drawKeyboardPositionX = screenWidth - 77;
+			int drawKeyboardPositionY = screenHeight - 60;
+
+			if(mcInstance.gameSettings.keyBindForward.isKeyDown()) { // W
+				drawText("W", drawKeyboardPositionX + 41, drawKeyboardPositionY + 4, 0xFFFFFF);
+			}
+
+			if(mcInstance.gameSettings.keyBindBack.isKeyDown()) { // S
+				drawText("S", drawKeyboardPositionX + 41, drawKeyboardPositionY + 22, 0xFFFFFF);
+			}
+
+			if(mcInstance.gameSettings.keyBindLeft.isKeyDown()) { // A
+				drawText("A", drawKeyboardPositionX + 23, drawKeyboardPositionY + 22, 0xFFFFFF);
+			}
+
+			if(mcInstance.gameSettings.keyBindRight.isKeyDown()) { // D
+				drawText("D", drawKeyboardPositionX + 59, drawKeyboardPositionY + 22, 0xFFFFFF);
+			}
+
+			if(mcInstance.gameSettings.keyBindSneak.isKeyDown()) { // Shift
+				drawText("Sh", drawKeyboardPositionX + 2, drawKeyboardPositionY + 22, 0xFFFFFF);
+			}
+
+			if(mcInstance.gameSettings.keyBindSprint.isKeyDown()) { // Ctrl
+				drawText("Ct", drawKeyboardPositionX + 3, drawKeyboardPositionY + 40, 0xFFFFFF);
+			}
+
+			if(mcInstance.gameSettings.keyBindJump.isKeyDown()) { // Space
+				drawText("Space", drawKeyboardPositionX + 28, drawKeyboardPositionY + 40, 0xFFFFFF);
+			}
+
+			if(mcInstance.gameSettings.keyBindAttack.isKeyDown() || attackedThisTick) { // Mouse1
+				drawText("LM", drawKeyboardPositionX + 2, drawKeyboardPositionY + 4, 0xFFFFFF);
+			}
+
+			if(mcInstance.gameSettings.keyBindUseItem.isKeyDown()) { // Mouse2
+				drawText("RM", drawKeyboardPositionX + 20, drawKeyboardPositionY + 4, 0xFFFFFF);
+			}
 		
-		for(int i = 0; i < infoToDraw.length; i++) {
-			String[] curInfo = infoToDraw[i];
-			
-			drawText(curInfo[0] + ": " + curInfo[1], 4, 4 + i * 10, 0xFFFFFF);
-		}
-		
-		int drawKeyboardPositionX = screenWidth - 77;
-		int drawKeyboardPositionY = screenHeight - 60;
-		
-		if(mcInstance.gameSettings.keyBindForward.isKeyDown()) { // W
-			drawText("W", drawKeyboardPositionX + 41, drawKeyboardPositionY + 4, 0xFFFFFF);
-		}
-		
-		if(mcInstance.gameSettings.keyBindBack.isKeyDown()) { // S
-			drawText("S", drawKeyboardPositionX + 41, drawKeyboardPositionY + 22, 0xFFFFFF);
-		}
-		
-		if(mcInstance.gameSettings.keyBindLeft.isKeyDown()) { // A
-			drawText("A", drawKeyboardPositionX + 23, drawKeyboardPositionY + 22, 0xFFFFFF);
-		}
-		
-		if(mcInstance.gameSettings.keyBindRight.isKeyDown()) { // D
-			drawText("D", drawKeyboardPositionX + 59, drawKeyboardPositionY + 22, 0xFFFFFF);
-		}
-		
-		if(mcInstance.gameSettings.keyBindSneak.isKeyDown()) { // Shift
-			drawText("Sh", drawKeyboardPositionX + 2, drawKeyboardPositionY + 22, 0xFFFFFF);
-		}
-		
-		if(mcInstance.gameSettings.keyBindSprint.isKeyDown()) { // Ctrl
-			drawText("Ct", drawKeyboardPositionX + 3, drawKeyboardPositionY + 40, 0xFFFFFF);
-		}
-		
-		if(mcInstance.gameSettings.keyBindJump.isKeyDown()) { // Space
-			drawText("Space", drawKeyboardPositionX + 28, drawKeyboardPositionY + 40, 0xFFFFFF);
-		}
-		
-		if(mcInstance.gameSettings.keyBindAttack.isKeyDown() || attackedThisTick) { // Mouse1
-			drawText("LM", drawKeyboardPositionX + 2, drawKeyboardPositionY + 4, 0xFFFFFF);
-		}
-		
-		if(mcInstance.gameSettings.keyBindUseItem.isKeyDown()) { // Mouse2
-			drawText("RM", drawKeyboardPositionX + 20, drawKeyboardPositionY + 4, 0xFFFFFF);
-		}
-		
-		// bot controlling
-		try {
+			// bot controlling
+
 			// get fps
 			
 			curFps = Minecraft.getDebugFPS();
 						
 			// bot tick handler
-			
-			long curTime = System.currentTimeMillis();
 				
 			long tickTimeDiff = curTime - lastTickTime;
 
@@ -273,20 +273,20 @@ public class GrindBot
 			if (tickTimeDiff < 1000 / 20) { // 20 ticks per second
 				return;
 			}
-			
-			// doing bot tick
-			
-			lastTickTime = curTime;
-			
-			attackedThisTick = false;
-			
-			if (grinderEnabled) {
-				mcInstance.gameSettings.fovSetting = fovWhenGrinding;
-				doBotTick();
-			}
 		}
 		catch(Exception e){
 			e.printStackTrace();
+		}
+
+		// doing bot tick
+
+		lastTickTime = curTime;
+
+		attackedThisTick = false;
+
+		if (grinderEnabled) {
+			mcInstance.gameSettings.fovSetting = fovWhenGrinding;
+			doBotTick();
 		}
 	}
 	
@@ -358,7 +358,7 @@ public class GrindBot
 				allKeysUp();
 			}
 			
-			if (mcInstance.thePlayer.posY > curSpawnLevel - 4 && !curTargetName.equals("null")) {
+			if (mcInstance.thePlayer.posY > curSpawnLevel - 4 && !curTargetName.equals("null") && !farFromMid()) {
 
 				// in spawn but has target (bad)
 
@@ -397,7 +397,7 @@ public class GrindBot
 					
 					apiKey = fileKey;
 					
-					System.out.println("set key: " + fileKey);
+					System.out.println("set key");
 					
 					foundKeyFile = true;
 					
@@ -1070,6 +1070,13 @@ public class GrindBot
 		mouseVelY *= TPS;
 	}
 	
+	public boolean farFromMid() {
+		if(mcInstance.thePlayer.posX > 32 || mcInstance.thePlayer.posZ > 32) {
+			return true;
+		}
+		return false;
+	}
+
 	public double timeSinWave(double div) { // little odd
 		double num = System.currentTimeMillis() / div * 100.0D;
 		num %= 360.0D;

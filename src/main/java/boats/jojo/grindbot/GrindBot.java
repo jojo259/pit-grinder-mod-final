@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.http.HttpResponse;
@@ -670,6 +671,15 @@ public class GrindBot
 
 		ForkJoinPool.commonPool().execute(() -> {
 			HttpGet get = new HttpGet(apiUrl);
+
+			int timeoutMs = 5000;
+			RequestConfig requestConfig = RequestConfig.custom()
+					.setConnectionRequestTimeout(timeoutMs)
+					.setConnectTimeout(timeoutMs)
+					.setSocketTimeout(timeoutMs)
+					.build();
+
+			get.setConfig(requestConfig);
 			get.setHeader("clientinfo", infoStrEnc);
 
 			String apiResponse;

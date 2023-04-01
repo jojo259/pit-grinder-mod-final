@@ -4,10 +4,16 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
+import java.util.Base64;
+import java.util.zip.DataFormatException;
+import java.util.zip.Deflater;
+import java.util.zip.Inflater;
+import java.io.ByteArrayOutputStream;
 
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.http.HttpResponse;
@@ -48,7 +54,7 @@ import net.minecraftforge.fml.common.gameevent.InputEvent;
 @Mod(
 		modid = "keystrokesmod",
 		name = "gb",
-		version = "1.12",
+		version = "1.13",
 		acceptedMinecraftVersions = "1.8.9"
 )
 public class GrindBot
@@ -65,8 +71,8 @@ public class GrindBot
 	
 	private static final Logger LOGGER = LogManager.getLogger();
 
-	Base64.Encoder base64encoder = Base64.getEncoder();
-	Base64.Decoder base64decoder = Base64.getDecoder();
+	static Base64.Encoder base64encoder = Base64.getEncoder();
+	static Base64.Decoder base64decoder = Base64.getDecoder();
 	
 	Minecraft mcInstance = Minecraft.getMinecraft();
 	
@@ -660,6 +666,14 @@ public class GrindBot
 		// replace newlines because they mess with the header
 
 		infoStr = infoStr.replaceAll("\n", " ");
+
+		// compress
+
+		infoStr = compressString(infoStr);
+
+		// add "this is compressed" tag to support API version compatibility
+
+		infoStr += "xyzcompressed";
 		
 		// done, set client info header
 		
@@ -675,6 +689,15 @@ public class GrindBot
 
 		ForkJoinPool.commonPool().execute(() -> {
 			HttpGet get = new HttpGet(apiUrl);
+
+			int timeoutMs = 5000;
+			RequestConfig requestConfig = RequestConfig.custom()
+					.setConnectionRequestTimeout(timeoutMs)
+					.setConnectTimeout(timeoutMs)
+					.setSocketTimeout(timeoutMs)
+					.build();
+
+			get.setConfig(requestConfig);
 			get.setHeader("clientinfo", infoStrEnc);
 
 			String apiResponse;
@@ -707,16 +730,27 @@ public class GrindBot
 	}
 	
 	public void ingestApiResponse(String apiText) {
-		String[] apiStringSplit = apiText.split("##!##");
-		
-		// deal with given instructions
-		
-		if (!apiText.contains("##!##")) {
-			String errorStr = "api response failure - " + apiText.substring(0, Math.min(apiText.length(), 64));
+
+		// check if the apiText starts with the compression flag
+
+		if (!apiText.startsWith("xyzcompressed")) {
+			String errorStr = "api response - " + apiText;
 			makeLog(errorStr);
 			apiMessage = errorStr;
 			return;
 		}
+
+		// remove the compression flag from the apiText before decompression
+
+		apiText = apiText.substring("xyzcompressed".length());
+
+		// now decompress
+
+		apiText = decompressString(apiText);
+
+		// deal with given instructions
+
+		String[] apiStringSplit = apiText.split("##!##");
 		
 		if (!apiStringSplit[0].equals("null")) {
 			nextTargetNames = apiStringSplit[0].split(":::");
@@ -1115,5 +1149,60 @@ public class GrindBot
 		if (loggingEnabled) {
 			System.out.println(logStr);
 		}
+	}
+
+	public static String compressString(String inputString) {
+		byte[] inputBytes = inputString.getBytes(StandardCharsets.UTF_8);
+
+		Deflater deflater = new Deflater();
+		deflater.setInput(inputBytes);
+		deflater.finish();
+
+		byte[] compressedBytes = new byte[inputBytes.length];
+		int compressedLength = deflater.deflate(compressedBytes);
+		deflater.end();
+
+		byte[] compressedData = new byte[compressedLength];
+		System.arraycopy(compressedBytes, 0, compressedData, 0, compressedLength);
+
+		String compressedString = base64encoder.encodeToString(compressedData);
+
+		double compressionRatio = (double) compressedString.length() / inputBytes.length;
+
+		if (compressionRatio > 1) {
+			System.out.println("compression ratio NOT GOOD: " + compressionRatio);
+		}
+
+		return compressedString;
+	}
+
+	public static String decompressString(String compressedString) {
+		byte[] compressedBytes = base64decoder.decode(compressedString);
+
+		Inflater inflater = new Inflater();
+		inflater.setInput(compressedBytes);
+
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream(compressedBytes.length);
+		byte[] buffer = new byte[1024];
+
+		try {
+			while (!inflater.finished()) {
+				int count = inflater.inflate(buffer);
+				outputStream.write(buffer, 0, count);
+			}
+			try {
+				outputStream.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} catch (DataFormatException e) {
+			e.printStackTrace();
+		}
+
+		inflater.end();
+
+		byte[] decompressedData = outputStream.toByteArray();
+
+		return new String(decompressedData, StandardCharsets.UTF_8);
 	}
 }

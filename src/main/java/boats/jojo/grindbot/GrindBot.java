@@ -965,6 +965,8 @@ public class GrindBot
 	}
 
 	public void goAfk() {
+		mouseVelX = 0;
+		mouseVelY = 0;
 		allKeysUp();
 		pressChatKeyIfNoGuiOpen();
 	}

@@ -883,10 +883,8 @@ public class GrindBot
 			curSpawnLevel = Double.parseDouble(apiStringSplit[14]);
 		}
 
-		if (apiStringSplit.length >= 16) { // can be removed when everyone has updated
-			if (!apiStringSplit[15].equals("null")) {
-				mouseSpeed = Double.parseDouble(apiStringSplit[15]);
-			}
+		if (!apiStringSplit[15].equals("null")) {
+			mouseSpeed = Double.parseDouble(apiStringSplit[15]);
 		}
 		
 		lastReceivedApiResponse = System.currentTimeMillis();

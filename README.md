@@ -45,6 +45,8 @@ If you would like to know exactly what is sent then you can ask in the Discord o
 #### Setting up a development environment
 If you've just finished the steps above you should see a `Minecraft Client` task in the top (If you don't you might have to restart IntellIJ first), this gives you a live enviroment for rapid prototyping
 
+If you can't see that task, it may be hidden in your task list: click on the dropdown arrow next to the current task, select "All Configurations", and select the "Minecraft Client" task.
+
 #### Setting up DevAuth
 This project comes with [DevAuth](https://github.com/DJtheRedstoner/DevAuth) built in and ready to go!
 To set it up, create the following file: `C:\Users\<name>\.devauth\config.toml` and copy paste the following:

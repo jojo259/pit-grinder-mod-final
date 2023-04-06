@@ -33,7 +33,7 @@ If you would like to know exactly what is sent then you can ask in the Discord o
 - Clone the repository and open it up with Intellij.
 - Don't worry! Things will break when you first open it up, this is normal!
 - Go to `File -> Project Structure -> Project` and set the SDK to 1.8. (You can click `Add SDK -> Download JDK` (And that will also work!)
-- Now we need to set the gradle version. Click on the `Gradle` tab (the default is in the top right tab), click the gear, and then hit `Gradle Settings`
+- Now we need to set the gradle version. Click on the `Gradle` tab (the default is in the top right tab), click the wrench icon, and then hit `Gradle Settings`
 - Now assign the Gradle JVM to JDK 17. Like in step 3, you may use the downloaded Amazon Corretto build.
 - Sync your Gradle tasks by hitting the reload icon and wait for everything to load.
 - Now to build, go back to the Gradle tab and click `Tasks -> Build -> Jar` and in a few minutes you can find the jar in the build folder.

@@ -535,7 +535,7 @@ public class GrindBot
 		
 		String middleBlockname = "null";
 		try {
-			middleBlockname = mcInstance.theWorld.getBlockState(new BlockPos(0, (int) mcInstance.thePlayer.posY - 1, 0)).getBlock().getRegistryName().split(":")[1];;
+			middleBlockname = mcInstance.theWorld.getBlockState(new BlockPos(0, (int) mcInstance.thePlayer.posY - 1, 0)).getBlock().getRegistryName().split(":")[1];
 		}
 		catch(Exception e) {
 			e.printStackTrace();

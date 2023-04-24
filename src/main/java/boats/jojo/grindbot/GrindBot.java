@@ -891,6 +891,14 @@ public class GrindBot
 		if (!apiStringSplit[15].equals("null")) {
 			mouseSpeed = Double.parseDouble(apiStringSplit[15]);
 		}
+
+		if (!apiStringSplit[16].equals("null")) {
+			if (apiStringSplit[16].equals("true")) {
+				grinderEnabled = false;
+				allKeysUp();
+				pressInventoryKeyIfNoGuiOpen();
+			}
+		}
 		
 		lastReceivedApiResponse = System.currentTimeMillis();
 		apiLastTotalProcessingTime = (int) (System.currentTimeMillis() - preApiProcessingTime);

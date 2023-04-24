@@ -9,6 +9,8 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 import java.io.ByteArrayOutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
@@ -31,6 +33,7 @@ import java.util.concurrent.ForkJoinPool;
 import java.io.IOException;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.block.Block;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
@@ -667,6 +670,49 @@ public class GrindBot
 		}
 
 		infoStr += modVersion + dataSeparator;
+
+		// blocks proximity player
+
+		String proximityBlocksStr = "";
+
+		int proximityBlocksHorizontalRange = 8;
+		int proximityBlocksVerticalRange = 2;
+		int playerPosX = (int) mcInstance.thePlayer.posX;
+		int playerPosY = (int) mcInstance.thePlayer.posY;
+		int playerPosZ = (int) mcInstance.thePlayer.posZ;
+
+		for (int x = playerPosX - proximityBlocksHorizontalRange; x <= playerPosX + proximityBlocksHorizontalRange; x++) {
+			for (int y = playerPosY - proximityBlocksVerticalRange; y <= playerPosY + proximityBlocksVerticalRange; y++) {
+				for (int z = playerPosZ - proximityBlocksHorizontalRange; z <= playerPosZ + proximityBlocksHorizontalRange; z++) {
+
+					Map<String, Character> blockChars = new HashMap<>();
+					blockChars.put("minecraft:air", '0');
+					blockChars.put("minecraft:obsidian", 'o');
+					blockChars.put("minecraft:glass", 'g');
+					blockChars.put("minecraft:slime", 's');
+					blockChars.put("minecraft:enchanting_table", 'e');
+					blockChars.put("minecraft:ender_chest", 'c');
+					blockChars.put("minecraft:sea_lantern", 'l');
+					blockChars.put("minecraft:carpet", 'r');
+					blockChars.put("char '.' is reserved for other blocks or error, do not use", '.');
+
+					char blockChar;
+
+					try { // i am scared of it not working with some blocks
+						String blockName = mcInstance.theWorld.getBlockState(new BlockPos(x, y, z)).getBlock().getRegistryName();
+						blockChar = blockChars.getOrDefault(blockName, '.').charValue();
+					} catch (Exception e) {
+						e.printStackTrace();
+						proximityBlocksStr += '.';
+						continue;
+					}
+
+					proximityBlocksStr += blockChar;
+				}
+			}
+		}
+
+		infoStr += proximityBlocksStr + dataSeparator;
 
 		// replace newlines because they mess with the header
 

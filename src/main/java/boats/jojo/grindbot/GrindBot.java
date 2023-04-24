@@ -260,31 +260,30 @@ public class GrindBot
 			if(mcInstance.gameSettings.keyBindUseItem.isKeyDown()) { // Mouse2
 				drawText("RM", drawKeyboardPositionX + 20, drawKeyboardPositionY + 4, 0xFFFFFF);
 			}
-		
-			// bot controlling
-
-			// get fps
-			
-			curFps = Minecraft.getDebugFPS();
-						
-			// bot tick handler
-				
-			long tickTimeDiff = curTime - lastTickTime;
-
-			if (
-				grinderEnabled && curTime - (lastReceivedApiResponse - apiLastTotalProcessingTime) >= 1000 // 1000ms per api call
-				&& curTime - lastCalledApi >= 500 // absolute minimum time to avoid spamming before any responses received
-			) {
-				lastCalledApi = curTime;
-				callBotApi();
-			}
-			
-			if (tickTimeDiff < 1000 / 20) { // 20 ticks per second
-				return;
-			}
 		}
 		catch(Exception e){
 			e.printStackTrace();
+		}
+
+		// get fps
+			
+		curFps = Minecraft.getDebugFPS();
+					
+		// bot tick handling
+			
+		long tickTimeDiff = curTime - lastTickTime;
+
+		if (
+			grinderEnabled
+			&& curTime - (lastReceivedApiResponse - apiLastTotalProcessingTime) >= 1000 // 1000ms per api call
+			&& curTime - lastCalledApi >= 500 // absolute minimum time to avoid spamming before any responses received
+		) {
+			lastCalledApi = curTime;
+			callBotApi();
+		}
+		
+		if (tickTimeDiff < 1000 / 20) { // 20 ticks per second
+			return;
 		}
 
 		// doing bot tick

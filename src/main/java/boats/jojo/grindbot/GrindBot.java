@@ -192,8 +192,8 @@ public class GrindBot
 	@SubscribeEvent
 	public void overlayFunc(RenderGameOverlayEvent.Post event) {
 		long curTime = System.currentTimeMillis();
-		try {
-			if (event.type == ElementType.HEALTH) {
+		try { // rendering GUI stuff, super low importance so errors don't matter
+			if (event.type == ElementType.HEALTH) { // these mess with the order or something
 				return;
 			}
 			if (event.type == ElementType.ARMOR) {

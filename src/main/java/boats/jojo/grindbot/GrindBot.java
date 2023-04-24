@@ -332,7 +332,7 @@ public class GrindBot
 
 				if (Math.floor(timeSinceReceivedApiResponse / 50) % 20 == 0) {
 					goAfk();
-					String issueStr = "too long since successful api response: " + timeSinceReceivedApiResponse + "ms. last api ping: " + apiLastPing + "ms. last api time: " + apiLastTotalProcessingTime + " ms.";
+					String issueStr = "too long since successful api response: " + Math.min(999999, timeSinceReceivedApiResponse) + "ms. last api ping: " + apiLastPing + "ms. last api time: " + apiLastTotalProcessingTime + " ms.";
 					apiMessage = issueStr;
 					System.out.println(issueStr);
 				}

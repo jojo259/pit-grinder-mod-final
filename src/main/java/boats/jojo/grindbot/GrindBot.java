@@ -310,7 +310,9 @@ public class GrindBot
 			importantChatMsg = curChatRaw;
 		}
 
-		chatMsgs.add(curChatRaw);
+		if (grinderEnabled) {
+			chatMsgs.add(curChatRaw);
+		}
 	}
 	
 	public void doBotTick() {

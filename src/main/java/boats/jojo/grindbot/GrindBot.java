@@ -275,6 +275,7 @@ public class GrindBot
 
 		if (
 			grinderEnabled
+			&& onHypixel()
 			&& curTime - (lastReceivedApiResponse - apiLastTotalProcessingTime) >= 1000 // 1000ms per api call
 			&& curTime - lastCalledApi >= 500 // absolute minimum time to avoid spamming before any responses received
 		) {
@@ -1206,6 +1207,17 @@ public class GrindBot
 		byte[] decompressedData = outputStream.toByteArray();
 
 		return new String(decompressedData, StandardCharsets.UTF_8);
+	}
+
+	public boolean onHypixel() {
+		String currentServerIp = mcInstance.getCurrentServerData().serverIP;
+		if (currentServerIp == null) {
+			return false;
+		}
+		if (currentServerIp.equals("hypixel.net")) {
+			return true;
+		}
+		return false;
 	}
 
 	public void setWindowTitle() {

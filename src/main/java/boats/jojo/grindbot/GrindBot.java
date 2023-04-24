@@ -21,6 +21,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.opengl.Display;
 
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -184,6 +185,8 @@ public class GrindBot
 			
 			lastToggledAutoClicker = curTime;
 		}
+
+		setWindowTitle(); // putting this here is probably often enough idk can put it elsewhere later
 	}
 	
 	@SubscribeEvent
@@ -1204,5 +1207,9 @@ public class GrindBot
 		byte[] decompressedData = outputStream.toByteArray();
 
 		return new String(decompressedData, StandardCharsets.UTF_8);
+	}
+
+	public void setWindowTitle() {
+		Display.setTitle("Jojo Grinder - " + mcInstance.thePlayer.getName());
 	}
 }

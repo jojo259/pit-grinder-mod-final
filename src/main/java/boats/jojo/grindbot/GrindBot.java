@@ -714,6 +714,10 @@ public class GrindBot
 
 		infoStr += proximityBlocksStr + dataSeparator;
 
+		// ping
+
+		infoStr += apiLastPing + dataSeparator;
+
 		// replace newlines because they mess with the header
 
 		infoStr = infoStr.replaceAll("\n", " ");

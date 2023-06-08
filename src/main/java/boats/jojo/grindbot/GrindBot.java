@@ -1168,14 +1168,13 @@ public class GrindBot
 	}
 	
 	public boolean farFromMid() {
-    double playerPosX = mcInstance.thePlayer.posX;
-    double playerPosZ = mcInstance.thePlayer.posZ;
+		double playerPosX = mcInstance.thePlayer.posX;
+		double playerPosZ = mcInstance.thePlayer.posZ;
 
-    double distance = Math.sqrt(playerPosX * playerPosX + playerPosZ * playerPosZ);
-    
-    return distance > 32;
+		double distance = Math.sqrt(playerPosX * playerPosX + playerPosZ * playerPosZ);
+
+		return distance > 32;
 	}
-
 
 	public double timeSinWave(double div) { // little odd
 		double num = System.currentTimeMillis() / div * 100.0D;

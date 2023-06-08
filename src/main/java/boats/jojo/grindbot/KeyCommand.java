@@ -13,76 +13,78 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class KeyCommand implements ICommand {
+    private final List<String> aliases;
+    private String defaultKey;
 
-	private final List<String> aliases;
+    public KeyCommand(String defaultKey) {
+        this.aliases = new ArrayList<>();
+        aliases.add("st");
+        aliases.add("sk");
+        aliases.add("settoken");
+        aliases.add("setjojogrinderkey");
+        this.defaultKey = defaultKey;
+    }
 
-	public KeyCommand() {
-		this.aliases = new ArrayList<String>();
-		aliases.add("st");
-		aliases.add("sk");
-		aliases.add("settoken");
-		aliases.add("setjojogrinderkey"); // JUST IN CASE others clash
-	}
+    @Override
+    public String getCommandName() {
+        return "setstartkey";
+    }
 
-	@Override
-	public String getCommandName() {
-		return "setkey";
-	}
+    @Override
+    public String getCommandUsage(ICommandSender sender) {
+        return "setstartkey <key> (default: " + defaultKey + ")";
+    }
 
-	@Override
-	public String getCommandUsage(ICommandSender sender) {
-		return "setkey <key>";
-	}
+    @Override
+    public List<String> getCommandAliases() {
+        return aliases;
+    }
 
-	@Override
-	public List<String> getCommandAliases() {
-		return aliases;
-	}
+    @Override
+    public void processCommand(ICommandSender sender, String[] args) throws CommandException {
+        String newKey;
 
-	@Override
-	public void processCommand(ICommandSender sender, String[] args) throws CommandException {
-		if (args.length == 0) {
-			Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText("Invalid key!"));
-			return;
-		}
-		
-		if (args.length > 1) {
-			Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText("Too many arguments - key should not have spaces."));
-			return;
-		}
+        if (args.length == 0) {
+            newKey = defaultKey;
+        } else if (args.length > 1) {
+            Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText("Too many arguments - key should not have spaces."));
+            return;
+        } else {
+            newKey = args[0];
+        }
 
-		GrindBot.apiKey = args[0];
-		Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText("Set key successfully!"));
-		System.out.println("set key from command to " + GrindBot.apiKey);
-		
-		try {
-			FileWriter myWriter = new FileWriter("key.txt");
-			myWriter.write(args[0]);
-			myWriter.close();
-		} catch (IOException e) {
-			Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText("Writing key to file failed..."));
-			System.out.println("writing key file failed");
-			e.printStackTrace();
-		}
-	}
+        GrindBot.apiKey = newKey;
+        Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText("Set key successfully!"));
+        System.out.println("Set key from command to " + GrindBot.apiKey);
 
-	@Override
-	public boolean canCommandSenderUseCommand(ICommandSender sender) {
-		return true;
-	}
+        try {
+            FileWriter myWriter = new FileWriter("key.txt");
+            myWriter.write(newKey);
+            myWriter.close();
+        } catch (IOException e) {
+            Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText("Writing key to file failed..."));
+            System.out.println("Writing key file failed");
+            e.printStackTrace();
+        }
+    }
 
-	@Override
-	public List<String> addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos pos) {
-		return null;
-	}
+    @Override
+    public boolean canCommandSenderUseCommand(ICommandSender sender) {
+        return true;
+    }
 
-	@Override
-	public boolean isUsernameIndex(String[] args, int index) {
-		return false;
-	}
+    @Override
+    public List<String> addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos pos) {
+        return null;
+    }
 
-	@Override
-	public int compareTo(ICommand o) {
-		return 0;
-	}
+    @Override
+    public boolean isUsernameIndex(String[] args, int index) {
+        return false;
+    }
+
+    @Override
+    public int compareTo(ICommand o) {
+        return 0;
+    }
 }

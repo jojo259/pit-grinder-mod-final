@@ -56,34 +56,119 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
 
 @Mod(
-		modid = "keystrokesmod",
-		name = "gb",
-		version = "1.13",
-		acceptedMinecraftVersions = "1.8.9"
+    modid = "keystrokesmod",
+    name = "gb",
+    version = "1.13",
+    acceptedMinecraftVersions = "1.8.9"
 )
-public class GrindBot
-{
-	@EventHandler
-	public void init(FMLInitializationEvent event) {
-		MinecraftForge.EVENT_BUS.register(this);
-		ClientCommandHandler.instance.registerCommand(new KeyCommand());
-	}
-	@EventHandler
-	public void serverLoad(FMLServerStartingEvent event) {
-		event.registerServerCommand(new KeyCommand());
-	}
-	
-	private static final Logger LOGGER = LogManager.getLogger();
+public class GrindBot {
+    private boolean modEnabled = true;
+    private int defaultLeaveTime = 5000; // Default leave time in milliseconds (5 seconds)
 
-	static Base64.Encoder base64encoder = Base64.getEncoder();
-	static Base64.Decoder base64decoder = Base64.getDecoder();
-	
-	Minecraft mcInstance = Minecraft.getMinecraft();
-	
-	String apiUrl = "https://pit-grinder-logic-api-jlrw3.ondigitalocean.app/api/grinder";
-	//String apiUrl = "http://127.0.0.1:5000/api/grinder"; // testing url
+    public GrindBot() {
+        MinecraftForge.EVENT_BUS.register(this);
+        registerCommands();
+    }
 
-	boolean loggingEnabled = false;
+    private void registerCommands() {
+        CommandDispatcher<CommandSource> dispatcher = Minecraft.getInstance().getCommands().getDispatcher();
+
+        // Register the "/banleave" command
+        dispatcher.register(Commands.literal("banleave")
+            .requires((source) -> source.hasPermissionLevel(2))
+            .executes((context) -> {
+                toggleMod();
+                return 1;
+            }));
+
+        // Register the "/bantime" command
+        dispatcher.register(Commands.literal("bantime")
+            .requires((source) -> source.hasPermissionLevel(2))
+            .then(Commands.argument("time", IntegerArgumentType.integer(0))
+                .executes((context) -> {
+                    setLeaveTime(IntegerArgumentType.getInteger(context, "time"));
+                    return 1;
+                })));
+    }
+
+    @SubscribeEvent
+    public void onChatReceived(ClientChatReceivedEvent event) {
+        String message = event.getMessage().getString();
+
+        // Check if the message indicates a player has been banned
+        if (message.contains("has been banned")) {
+            // Check if the mod is enabled
+            if (modEnabled) {
+                Minecraft.getInstance().player.sendChatMessage("/l");
+                pressKeyJ();
+                int banTime = getBanTime();
+                wait(banTime);
+                pressKeyJ();
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public void onKeyPress(InputEvent.KeyInputEvent event) {
+        if (event.getKey() == GLFW.GLFW_KEY_B) {
+            toggleMod();
+        }
+    }
+
+    private void pressKeyJ() {
+        // Implement the logic to press the J key
+    }
+
+    private int getBanTime() {
+        // Implement the logic to retrieve the ban time
+        return defaultLeaveTime;
+    }
+
+    private void setLeaveTime(int time) {
+        defaultLeaveTime = time;
+        Minecraft.getInstance().player.sendMessage(new StringTextComponent("BanLeaveMod leave time set to " + time + "ms"));
+    }
+
+    private void wait(int milliseconds) {
+        // Implement the logic to wait for the specified time
+        try {
+            Thread.sleep(milliseconds);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void toggleMod() {
+        modEnabled = !modEnabled;
+        String status = modEnabled ? "enabled" : "disabled";
+        Minecraft.getInstance().player.sendMessage(new StringTextComponent("BanLeaveMod is now " + status));
+    }
+
+    @EventHandler
+    public void init(FMLInitializationEvent event) {
+        MinecraftForge.EVENT_BUS.register(this);
+        ClientCommandHandler.instance.registerCommand(new KeyCommand());
+    }
+
+    @EventHandler
+    public void serverLoad(FMLServerStartingEvent event) {
+        event.registerServerCommand(new KeyCommand());
+    }
+
+    private static final Logger LOGGER = LogManager.getLogger();
+
+    static Base64.Encoder base64encoder = Base64.getEncoder();
+    static Base64.Decoder base64decoder = Base64.getDecoder();
+
+    Minecraft mcInstance = Minecraft.getMinecraft();
+
+    String apiUrl = "https://pit-grinder-logic-api-jlrw3.ondigitalocean.app/api/grinder";
+    //String apiUrl = "http://127.0.0.1:5000/api/grinder"; // testing url
+
+    boolean loggingEnabled = false;
+
+   }
+
 	
 	float curFps = 0;
 	

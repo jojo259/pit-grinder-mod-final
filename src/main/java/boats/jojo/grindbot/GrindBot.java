@@ -1247,7 +1247,7 @@ public class GrindBot
 		if (currentServerIp == null) {
 			return false;
 		}
-		if (currentServerIp.equals("hypixel.net")) {
+		if (currentServerIp.endsWith("hypixel.net")) {
 			return true;
 		}
 		return false;

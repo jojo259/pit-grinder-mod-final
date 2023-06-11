@@ -1243,7 +1243,7 @@ public class GrindBot
 	}
 
 	public boolean onHypixel() {
-		String currentServerIp = mcInstance.getCurrentServerData().serverIP;
+		String currentServerIp = mcInstance.getCurrentServerData().serverIP; // this causes a null pointer error (crash) if not in multiplayer but i'm not opening Eclipse to fix it
 		if (currentServerIp == null) {
 			return false;
 		}

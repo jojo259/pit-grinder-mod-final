@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "boats.jojo.gb"
-version = "1.14"
+version = "1.14.1"
 
 // Toolchains:
 java {
